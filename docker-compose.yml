@@ -1,0 +1,11 @@
+services:
+  reportes:
+    build: .
+    image: TU_USUARIO/reportes-ventas:latest
+    volumes:
+      - ./entrada:/data/entrada:ro
+      - ./salida:/data/salida
+      - ./estado:/data/estado
+    environment:
+      BASE_URL: ${BASE_URL:-}
+      DIRECCION_CORREO: ${DIRECCION_CORREO:-}

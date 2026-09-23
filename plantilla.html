@@ -1,0 +1,942 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Reporte semanal · Vista de dirección · Sem 34</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+:root{--paper:#FAFAF7;--paper-2:#FFF;--rule:#DEDDD6;--rule-2:#EAE9E3;
+  --ink:#15151A;--ink-2:#5C5C63;--ink-3:#93938E;
+  --cyan:#0093D0;--magenta:#D6006E;--yellow:#F2C200;--ok:#1F7A4C;--amber:#8A7500;
+  --pad:16px;--nav-h:58px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:14px;
+  line-height:1.45;-webkit-font-smoothing:antialiased;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px))}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+.colorbar{display:flex;height:5px}.colorbar i{flex:1}
+.colorbar i:nth-child(1){background:var(--cyan)}.colorbar i:nth-child(2){background:var(--magenta)}
+.colorbar i:nth-child(3){background:var(--yellow)}.colorbar i:nth-child(4){background:var(--ink)}
+
+header{background:var(--paper-2);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:40}
+.hd{padding:11px var(--pad);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.hd .who{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;line-height:1;
+  letter-spacing:-.01em;text-transform:uppercase}
+.hd .sub{font-size:10.5px;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase;margin-top:4px;font-weight:500}
+.pick{appearance:none;border:1px solid var(--rule);background:var(--paper-2);border-radius:2px;
+  font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--ink);padding:8px 30px 8px 11px;min-height:40px;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 17px,calc(100% - 10px) 17px;background-size:5px 5px;background-repeat:no-repeat;max-width:56vw}
+.pick:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
+
+.alerts{background:var(--ink);color:#fff;padding:9px var(--pad) 11px}
+.alerts h3{margin:0 0 7px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8F8F96;font-weight:600}
+.alert{display:flex;gap:9px;align-items:flex-start;padding:4px 0;font-size:12.5px;line-height:1.4;color:#EDEDF0}
+.alert b{color:#fff;font-weight:600}
+.dot{width:7px;height:7px;border-radius:50%;flex:0 0 7px;margin-top:5px}
+.dot.m{background:var(--magenta)}.dot.y{background:var(--yellow)}.dot.c{background:var(--cyan)}
+.banner{background:#FFF8E1;border-top:1px solid var(--rule);padding:8px var(--pad);font-size:11.5px;color:#6B5A00;line-height:1.45}
+.banner b{color:#4A3E00;font-weight:600}
+
+.panel{display:none}.panel.on{display:block}
+.sec{padding:18px var(--pad) 0}
+.sec h2{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-2);margin:0 0 12px;padding-bottom:7px;border-bottom:1px solid var(--rule);
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.sec h2 span{font-family:Inter,sans-serif;letter-spacing:0;text-transform:none;font-size:11px;color:var(--ink-3);font-weight:400}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chip{appearance:none;cursor:pointer;background:var(--paper-2);border:1px solid var(--rule);border-radius:2px;
+  font-family:'Barlow Condensed',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--ink-2);padding:5px 10px;min-height:32px;line-height:1.4;
+  transition:background .12s,color .12s,border-color .12s}
+.chip b{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--ink-3);margin-left:3px}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chip[aria-pressed="true"] b{color:var(--yellow)}
+.chip:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden;background:var(--paper-2);margin-bottom:12px}
+.seg button{appearance:none;border:0;background:transparent;cursor:pointer;font-family:'Barlow Condensed',sans-serif;
+  font-size:12.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);
+  padding:6px 12px;min-height:32px;border-right:1px solid var(--rule-2)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg button:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px}
+
+.tbl{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--rule);background:var(--paper-2);margin:0 var(--pad) 4px}
+table{border-collapse:collapse;width:100%;min-width:max-content}
+th,td{padding:8px 11px;text-align:left;border-bottom:1px solid var(--rule-2);white-space:nowrap}
+thead th{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);background:var(--paper);border-bottom:1px solid var(--rule)}
+tbody tr:last-child td{border-bottom:0}
+tbody tr.tot td{background:var(--paper);font-weight:600;border-top:1px solid var(--rule)}
+td.n,th.n{text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:12.5px}
+th.stick,td.stick{position:sticky;left:0;background:var(--paper-2);z-index:1;border-right:1px solid var(--rule);
+  font-weight:500;max-width:190px;overflow:hidden;text-overflow:ellipsis}
+thead th.stick{background:var(--paper);z-index:3}
+tbody tr.tot td.stick{background:var(--paper)}
+tbody tr:hover td,tbody tr:hover td.stick{background:#F4F3EE}
+tr.click{cursor:pointer}
+tr.wk td{background:var(--paper);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule-2)}
+tr.wk td.stick{background:var(--paper);font-family:'Barlow Condensed',sans-serif;font-size:12px;
+  font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+tr.grp td.stick{cursor:pointer}
+tr.grp .gchev{color:var(--cyan);font-size:9px;display:inline-block;width:11px;transition:transform .18s}
+tr.grp.open .gchev{transform:rotate(90deg)}
+tr.grp td{background:linear-gradient(90deg,var(--cyan) 0 2px,transparent 2px)}
+tr.sub{display:none}
+tr.sub.show{display:table-row}
+tr.sub td{background:#F7F9FB;font-size:12px;color:var(--ink-2)}
+tr.sub td.stick{background:#F7F9FB;padding-left:26px;font-weight:400}
+.neg{color:var(--magenta)}.pos{color:var(--ok)}.amb{color:var(--amber)}.mut{color:var(--ink-3)}
+.desc{font-weight:400;color:var(--ink-2);font-size:12.5px;white-space:normal;min-width:180px}
+.scrollhint{font-size:10.5px;color:var(--ink-3);padding:5px var(--pad) 0;display:block}
+.mb{display:inline-block;width:50px;height:6px;background:var(--rule-2);vertical-align:middle;margin-right:7px}
+.mb i{display:block;height:100%;background:var(--ink)}
+.mb i.good{background:var(--ok)}.mb i.warn{background:var(--yellow)}.mb i.bad{background:var(--magenta)}
+
+.fig{background:var(--paper-2);border:1px solid var(--rule);padding:15px;margin-bottom:12px}
+.fig .lbl{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.fig .val{font-family:'JetBrains Mono',monospace;font-size:27px;font-weight:700;letter-spacing:-.03em;margin:5px 0 2px}
+.fig .note{font-size:11.5px;color:var(--ink-2)}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.duo .fig{margin-bottom:0}.duo .val{font-size:19px}
+.fig.exp{padding:0}
+.fig.exp .fig-hd{width:100%;text-align:left;appearance:none;border:0;background:transparent;cursor:pointer;
+  font:inherit;color:inherit;padding:14px 15px 12px;display:block}
+.fig.exp .lbl{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.fig.exp .lbl .chev{color:var(--ink-3);font-size:10px;transition:transform .18s}
+.fig.exp.open .chev{transform:rotate(90deg)}
+.fig-bd{display:none;border-top:1px dashed var(--rule)}
+.fig.exp.open .fig-bd{display:block}
+.fig-bd .tbl{border:0;margin:0}
+
+.pb{margin:9px 0 2px}
+.pb-track{height:9px;background:var(--rule-2);position:relative;overflow:hidden}
+.pb-fill{height:100%;background:var(--ink);transition:width .5s cubic-bezier(.2,.7,.3,1);position:absolute;left:0;top:0}
+.pb-fill.warn{background:var(--yellow)}.pb-fill.bad{background:var(--magenta)}.pb-fill.good{background:var(--ok)}
+.pb-over{position:absolute;top:0;height:100%;background:var(--ok);
+  background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.55) 0 2px,transparent 2px 5px)}
+.pb-tick{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink);z-index:2}
+.pb-over.clip{border-right:3px solid var(--paper-2);
+  -webkit-mask:linear-gradient(90deg,#000 calc(100% - 9px),transparent calc(100% - 9px)),
+    repeating-linear-gradient(90deg,#000 0 3px,transparent 3px 6px);
+  -webkit-mask-composite:source-over;mask-composite:add}
+.mb .ov.clip{-webkit-mask:linear-gradient(90deg,#000 calc(100% - 6px),transparent calc(100% - 6px)),
+    repeating-linear-gradient(90deg,#000 0 2px,transparent 2px 4px);mask-composite:add}
+.pb-track::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(255,255,255,.75) calc(10% - 1px) 10%)}
+.curva{display:flex;gap:3px;align-items:flex-end;background:var(--paper-2);border:1px solid var(--rule);
+  padding:12px 10px 8px;margin-bottom:4px}
+.cm{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.cbars{height:110px;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:2px;position:relative}
+.cmeta{width:44%;background:var(--rule-2);border-top:2px solid var(--rule)}
+.cventa{width:44%;background:var(--ink)}
+.cventa.good{background:var(--ok)}.cventa.warn{background:var(--yellow)}.cventa.bad{background:var(--magenta)}
+.cventa.nil{background:transparent;border-bottom:2px solid var(--rule)}
+.cl{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;color:var(--ink-3);letter-spacing:.06em}
+.cp{font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:600}
+.pb-scale{display:flex;justify-content:space-between;font-size:9.5px;color:var(--ink-3);
+  font-family:'JetBrains Mono',monospace;margin-top:3px}
+.mb{position:relative}
+.mb .ov{position:absolute;top:0;height:100%;background:var(--ok);
+  background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.55) 0 2px,transparent 2px 5px)}
+.mb .tk{position:absolute;top:-1px;bottom:-1px;width:1.5px;background:var(--ink-2);z-index:2}
+.pb-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-2);margin-top:5px}
+.pb-meta b{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--ink)}
+
+.tag{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;padding:1px 6px;border:1px solid currentColor;white-space:nowrap;line-height:1.6;display:inline-block}
+.t-cli{color:var(--cyan)}.t-pro{color:var(--magenta)}.t-can{color:var(--amber)}
+.t-est{color:var(--ink-2)}
+.t-no{color:#fff;background:var(--magenta);border-color:var(--magenta)}.t-ok{color:var(--ok)}
+.pill{background:var(--paper-2);border:1px solid var(--rule);border-bottom:0;padding:9px 13px;font-size:12px;
+  color:var(--ink-2);margin:0 var(--pad)}
+.pill b{color:var(--magenta);font-weight:600}
+.reparto{display:grid;grid-template-columns:1fr;border:1px solid var(--rule);background:var(--paper-2);margin-bottom:12px}
+.rp{padding:12px 15px;border-bottom:1px solid var(--rule-2)}
+.rp:last-child{border-bottom:0}
+.rp-l{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.rp-v{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;margin:4px 0 2px}
+.rp-n{font-size:11.5px;color:var(--ink-2);line-height:1.4}
+@media (min-width:760px){.reparto{grid-template-columns:repeat(3,1fr)}
+  .rp{border-bottom:0;border-right:1px solid var(--rule-2)}.rp:last-child{border-right:0}}
+.gapnote{background:var(--ink);color:#EDEDF0;padding:10px 13px;font-size:12px;line-height:1.45;margin-bottom:12px}
+.gapnote b{color:var(--yellow);font-weight:600}
+.blocked{background:var(--paper-2);border:1px solid var(--rule);padding:15px;margin:0 var(--pad) 4px;
+  font-size:12.5px;color:var(--ink-2);line-height:1.5}
+.blocked b{color:var(--ink);font-weight:600;display:block;margin-bottom:3px;font-size:13px}
+
+nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--paper-2);border-top:1px solid var(--rule);
+  display:flex;padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;appearance:none;border:0;background:transparent;cursor:pointer;padding:8px 2px;min-height:var(--nav-h);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  font-family:'Barlow Condensed',sans-serif;font-size:11.5px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-3);border-top:2px solid transparent;margin-top:-1px}
+nav button .ic{width:19px;height:19px}
+nav button[aria-selected="true"]{color:var(--ink);border-top-color:var(--ink)}
+footer{padding:18px var(--pad) 6px;font-size:10.5px;color:var(--ink-3);line-height:1.6}
+
+@media (min-width:760px){
+  :root{--pad:26px}
+  body{padding-bottom:0;max-width:1220px;margin:0 auto;border-left:1px solid var(--rule);border-right:1px solid var(--rule)}
+  .hd .who{font-size:30px}
+  .pick{max-width:none;font-size:15px}
+  nav{position:static;border-top:0;border-bottom:1px solid var(--rule);padding:0 var(--pad)}
+  nav button{flex:0 0 auto;flex-direction:row;gap:7px;min-height:46px;padding:0 18px;font-size:12.5px;
+    border-top:0;border-bottom:2px solid transparent;margin-top:0}
+  nav button[aria-selected="true"]{border-top-color:transparent;border-bottom-color:var(--ink)}
+  .duo{grid-template-columns:repeat(4,1fr)}
+  th.stick,td.stick{position:static;max-width:none}
+  .scrollhint{display:none}
+  table{min-width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header>
+  <div class="colorbar"><i></i><i></i><i></i><i></i></div>
+  <div class="hd">
+    <div>
+      <div class="who" id="hd-who">Panorama</div>
+      <div class="sub" id="hd-sub">${L.sem} · ${L.rango} · Vista de dirección</div>
+    </div>
+    <select class="pick" id="pick" aria-label="Seleccionar vendedor"></select>
+  </div>
+  <div id="hd-alerts"></div>
+  <div id="hd-avisos"></div>
+  <div class="banner"><b>Vista de dirección.</b> Reproduce lo que ve cada vendedor. «Antigüedad» en pedidos usa <span class="mono">fecha_emision</span>, que es la fecha de generación del pedido, no la de compromiso de entrega.</div>
+</header>
+
+<nav role="tablist" id="nav"></nav>
+
+<main>
+<section class="panel on" id="p-1" role="tabpanel"></section>
+<section class="panel" id="p-2" role="tabpanel"></section>
+<section class="panel" id="p-3" role="tabpanel"></section>
+<section class="panel" id="p-4" role="tabpanel"></section>
+</main>
+<footer id="foot">Litoprocess, S.A. de C.V. · Uso interno · Datos al 18 ago 2026.</footer>
+
+<script id="payload" type="application/json">__DATA__</script>
+<script>
+const _P = JSON.parse(document.getElementById('payload').textContent);
+const DB = _P.V, EM = _P.E;
+const L=EM.lbl, SEMLBL=L.sem, PERL={s:L.sem,m:L.mes+' a la fecha',a:L.ano};
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const mx = n => '$' + Math.round(n||0).toLocaleString('es-MX');
+const k  = n => (n/1000).toLocaleString('es-MX',{minimumFractionDigits:1,maximumFractionDigits:1});
+const cls = p => p>=100?'good':p>=80?'':p>=60?'warn':'bad';
+const MESN=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const fdia = s => s ? s.slice(8,10)+' '+MESN[+s.slice(5,7)-1]+' '+s.slice(2,4) : '—';
+const dias = (a,b) => (a&&b) ? Math.round((new Date(b)-new Date(a))/86400000) : null;
+document.title = 'Reporte semanal · Vista de dirección · ' + L.sem;
+document.getElementById('foot').textContent = 'Litoprocess, S.A. de C.V. · Uso interno · Datos al ' + fdia(EM.fin) + '.';
+/* barra con escala: SC = tope de la escala, p = porcentaje real */
+function bar(p,SC,alto){
+  const w=v=>Math.min(v,SC)/SC*100, fuera=p>SC;
+  const base=Math.min(p,100), over=p>100?p-100:0;
+  return `<div class="pb-track"${alto?' style="height:11px"':''}>
+    <div class="pb-fill ${cls(p)}" style="width:${w(base)}%"></div>
+    ${over?`<div class="pb-over${fuera?' clip':''}" style="left:${w(100)}%;width:${w(p)-w(100)}%"></div>`:''}
+    ${SC>100?`<div class="pb-tick" style="left:${w(100)}%"></div>`:''}
+  </div>`;
+}
+function minibar(p,SC){
+  const w=v=>Math.min(v,SC)/SC*100, fuera=p>SC;
+  const base=Math.min(p,100), over=p>100?p-100:0;
+  return `<span class="mb"><i class="${cls(p)}" style="width:${w(base)}%"></i>
+    ${over?`<span class="ov${fuera?' clip':''}" style="left:${w(100)}%;width:${w(p)-w(100)}%"></span>`:''}
+    ${SC>100?`<span class="tk" style="left:${w(100)}%"></span>`:''}</span>`;
+}
+const TOPE=150;
+const escala = ps => {const m=Math.max(100,...ps.filter(v=>v!==null&&isFinite(v)));
+  return Math.min(TOPE,Math.ceil(m/25)*25);};
+
+const H = cols => '<thead><tr>'+cols.map(c=>`<th class="${c[1]||''}">${c[0]}</th>`).join('')+'</tr></thead>';
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+const SOLO = _P.solo || null;
+const VEND = Object.keys(DB).sort((a,b)=>DB[b].fact.a-DB[a].fact.a);
+const pick = document.getElementById('pick');
+if(SOLO){ pick.style.display='none'; }
+else pick.innerHTML = '<option value="__all">▸ Vista de dirección</option>' +
+  VEND.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+
+
+/* ============ VISTA DE DIRECCIÓN ============ */
+const NAVD=[['Cierre de año','M3 20h18M6 20V11M11 20V5M16 20v-7M21 20v-4'],
+            ['Riesgo','M12 3l9 16H3z M12 10v4M12 16.5v.5'],
+            ['Pipeline','M3 5h18l-7 8v6l-4 2v-8z'],
+            ['Equipo','M8 11a3 3 0 100-6 3 3 0 000 6zM2 20a6 6 0 0112 0M17 11a3 3 0 100-6 3 3 0 000 6zM15 20a6 6 0 017-5.9']];
+const NAVV=[['Ventas','M3 20h18M6 20V11M11 20V5M16 20v-7M21 20v-4'],
+            ['Oport.','M3 5h18l-7 8v6l-4 2v-8z'],
+            ['Segui.','M3 5h18v16H3zM3 10h18M8 3v4M16 3v4'],
+            ['Cobranza','M2 6h20v12H2zM12 9.4a2.6 2.6 0 100 5.2 2.6 2.6 0 000-5.2']];
+function pintaNav(items){
+  document.getElementById('nav').innerHTML = items.map((it,i)=>
+    `<button role="tab" aria-selected="${i===0}" data-tab="${i+1}">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="${it[1]}"/></svg>${it[0]}</button>`).join('');
+  document.querySelectorAll('#nav button').forEach(b=>{
+    b.onclick=()=>{document.querySelectorAll('#nav button').forEach(x=>x.setAttribute('aria-selected','false'));
+      document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+      b.setAttribute('aria-selected','true');
+      document.getElementById('p-'+b.dataset.tab).classList.add('on');
+      window.scrollTo({top:0,behavior:'instant'})};
+  });
+  document.querySelectorAll('.panel').forEach((x,i)=>x.classList.toggle('on',i===0));
+}
+
+/* --- barras de tendencia mensual --- */
+function curva(){
+  const ms=EM.meses, maxv=Math.max(...ms.map(m=>Math.max(m.v,m.me)));
+  return '<div class="curva">' + ms.map(function(m){
+    var p = m.me ? m.v/m.me*100 : 0;
+    var hm = m.me/maxv*100, hv = m.v/maxv*100;
+    var col = m.v===0 ? 'nil' : cls(p);
+    var pc  = m.v===0 ? 'mut' : (p>=100 ? 'pos' : (p<70 ? 'neg' : ''));
+    var tx  = m.v ? Math.round(p)+'%' : '—';
+    return '<div class="cm"><div class="cbars">'
+      + '<div class="cmeta" style="height:'+hm+'%"></div>'
+      + '<div class="cventa '+col+'" style="height:'+hv+'%"></div>'
+      + '</div><div class="cl">'+MESC[m.m]+'</div>'
+      + '<div class="cp '+pc+'">'+tx+'</div></div>';
+  }).join('') + '</div>';
+}
+const MESC=['','E','F','M','A','M','J','J','A','S','O','N','D'];
+
+/* --- 1 · CIERRE DE AÑO --- */
+function dirCierre(){
+  const a=EM.acum, an=EM.anual, re=EM.resto;
+  const pct=a.v/a.m*100;
+  const ritmo=a.v/EM.mes, proy=a.v+ritmo*re.meses, proyP=proy/an.m*100;
+  const nec=re.m/re.meses, brecha=an.m-proy;
+  const cob=EM.pipe.v+EM.ped.v, falta=an.m-a.v;
+  document.getElementById('p-1').innerHTML=`
+    <div class="sec"><h2>Cierre de año <span>al ${fdia(EM.fin)}</span></h2>
+      <div class="duo">
+        <div class="fig"><div class="lbl">${L.acu}</div><div class="val">${mx(a.v)}</div>
+          <div class="note">${pct.toFixed(1)}% de ${mx(a.m)}</div></div>
+        <div class="fig"><div class="lbl">Proyección al cierre</div><div class="val ${proyP<90?'neg':''}" style="color:${proyP<90?'var(--magenta)':'inherit'}">${mx(proy)}</div>
+          <div class="note">${proyP.toFixed(1)}% de la meta anual</div></div>
+        <div class="fig"><div class="lbl">Ritmo actual</div><div class="val">${mx(ritmo)}</div><div class="note">por mes, promedio del año</div></div>
+        <div class="fig"><div class="lbl">Ritmo necesario</div><div class="val" style="color:var(--amber)">${mx(nec)}</div>
+          <div class="note">por mes, lo que resta · ${((nec/ritmo-1)*100).toFixed(0)}% más</div></div>
+      </div>
+      <div class="gapnote"><b>Faltan ${mx(brecha)} para la meta anual</b> si se mantiene el ritmo. El último cuatrimestre concentra ${mx(re.m)}, el ${(re.m/an.m*100).toFixed(0)}% del año, y exige ${mx(nec)} mensuales contra los ${mx(ritmo)} que se vienen haciendo.</div>
+    </div>
+    <div class="sec"><h2>Venta contra meta, mes a mes <span>barra clara = meta</span></h2>${curva()}</div>
+    <div class="sec"><h2>Cobertura del faltante</h2>
+      <div class="tbl"><table>${H([['Concepto','stick'],['Importe','n'],['Cubre','n']])}<tbody>
+        <tr><td class="stick">Falta para la meta anual</td><td class="n">${mx(falta)}</td><td class="n mut">—</td></tr>
+        <tr><td class="stick">Pedidos pendientes de facturar</td><td class="n">${mx(EM.ped.v)}</td><td class="n">${(EM.ped.v/falta*100).toFixed(0)}%</td></tr>
+        <tr><td class="stick">Pipeline cotizado</td><td class="n">${mx(EM.pipe.v)}</td><td class="n">${(EM.pipe.v/falta*100).toFixed(0)}%</td></tr>
+        <tr class="tot"><td class="stick">Cobertura total</td><td class="n">${mx(cob)}</td><td class="n ${cob>falta?'pos':'neg'}">${(cob/falta*100).toFixed(0)}%</td></tr>
+      </tbody></table></div>
+      <div class="sec" style="padding:8px 0 0"><div style="font-size:11.5px;color:var(--ink-3)">
+        El pipeline entra a valor nominal. A la conversión por importe del año (${EM.conv.a.tv}%) aportaría ${mx(EM.pipe.v*EM.conv.a.tv/100)}.</div></div>
+    </div>
+    <div class="sec"><h2>Clientes nuevos <span>bolsa de presupuesto</span></h2>
+      <div class="duo">
+        <div class="fig"><div class="lbl">Clientes nuevos facturados</div><div class="val">${EM.nuevos.n}</div>
+          <div class="note">en ${EM.nuevos.vend} vendedores</div></div>
+        <div class="fig"><div class="lbl">Facturado acumulado</div><div class="val">${mx(EM.bolsa.v)}</div>
+          <div class="note">${(EM.bolsa.v/EM.bolsa.m*100).toFixed(1)}% de la meta</div></div>
+        <div class="fig"><div class="lbl">Meta acumulada</div><div class="val">${mx(EM.bolsa.m)}</div></div>
+        <div class="fig"><div class="lbl">Ticket promedio</div><div class="val">${EM.nuevos.n?mx(EM.bolsa.v/EM.nuevos.n):'—'}</div>
+          <div class="note">por cliente nuevo</div></div>
+      </div>
+      <div class="fig">${bar(EM.bolsa.v/EM.bolsa.m*100,150,true)}
+        <div class="pb-meta"><span>${mx(EM.bolsa.v)} de ${mx(EM.bolsa.m)}</span><b>${(EM.bolsa.v/EM.bolsa.m*100).toFixed(1)}%</b></div>
+        <div class="note" style="margin-top:9px">Meta anual ${mx(EM.bolsa.man)} repartida en ${EM.bolsa.vend} vendedores.</div></div>
+    </div>
+    <span class="scrollhint">→ Desliza la tabla</span>
+    <div class="tbl"><table>${H([['Cliente nuevo','stick'],['Vendedor',''],['Facturado','n']])}<tbody>
+      ${EM.nuevos.top.map(t=>`<tr class="click" data-v="${esc(t.vend)}"><td class="stick">${esc(t.n)}</td>
+        <td class="desc">${esc(t.vend)}</td><td class="n">${mx(t.v)}</td></tr>`).join('')}
+      <tr class="tot"><td class="stick">${EM.nuevos.n} clientes</td><td></td><td class="n">${mx(EM.bolsa.v)}</td></tr>
+    </tbody></table></div>`;
+  ligaFilas();
+}
+
+/* --- 2 · RIESGO --- */
+function dirRiesgo(){
+  const c=EM.conc, ct=EM.cart, r=ct.rangos, venc=r[3]+r[4];
+  document.getElementById('p-2').innerHTML=`
+    <div class="sec"><h2>Concentración de clientes <span>${c.n} facturaron en el año</span></h2>
+      <div class="duo">
+        <div class="fig"><div class="lbl">Top 1</div><div class="val">${c.acum['1']}%</div><div class="note">${esc(c.top[0].n)}</div></div>
+        <div class="fig"><div class="lbl">Top 5</div><div class="val">${c.acum['5']}%</div></div>
+        <div class="fig"><div class="lbl">Top 10</div><div class="val ${c.acum['10']>50?'neg':''}" style="color:${c.acum['10']>50?'var(--magenta)':'inherit'}">${c.acum['10']}%</div></div>
+        <div class="fig"><div class="lbl">Top 20</div><div class="val">${c.acum['20']}%</div></div>
+      </div>
+    </div>
+    <span class="scrollhint">→ Desliza la tabla</span>
+    <div class="tbl"><table>${H([['Cliente','stick'],['Facturado','n'],['% del total','n'],['Acumulado','n']])}<tbody>
+      ${(()=>{let ac=0;return c.top.map(t=>{ac+=t.p;return `<tr><td class="stick">${esc(t.n)}</td>
+        <td class="n">${mx(t.v)}</td><td class="n">${t.p}%</td><td class="n mut">${ac.toFixed(1)}%</td></tr>`}).join('')})()}
+    </tbody></table></div>
+
+    <div class="sec"><h2>Clientes que dejaron de comprar <span>${EM.fugaT.n} · ${mx(EM.fugaT.v)}</span></h2>
+      <div class="gapnote">Facturaron en meses previos y llevan los últimos dos en cero. Representaban ${mx(EM.fugaT.v)}, el ${(EM.fugaT.v/EM.acum.v*100).toFixed(1)}% de la facturación del año.</div>
+    </div>
+    <span class="scrollhint">→ Desliza la tabla</span>
+    <div class="tbl"><table>${H([['Cliente','stick'],['Vendedor',''],['Última venta',''],['Facturado previo','n']])}<tbody>
+      ${EM.fuga.map(f=>`<tr class="click" data-v="${esc(f.vend)}"><td class="stick">${esc(f.n)}</td>
+        <td class="desc">${esc(f.vend)}</td><td class="mut">${MESL[f.ult]||'—'}</td><td class="n">${mx(f.v)}</td></tr>`).join('')}
+    </tbody></table></div>
+
+    <div class="sec"><h2>Cartera <span>Total ${mx(ct.tot)}</span></h2>
+      <div class="dual">
+        <div><div class="d-l">Vencido a más de 60 días</div><div class="d-v" style="color:var(--magenta)">${mx(venc)}</div>
+          <div class="d-n">${(venc/ct.tot*100).toFixed(1)}% de la cartera</div></div>
+        <div class="alt"><div class="d-l">Concentrado en 31–60</div><div class="d-v">${(r[2]/ct.tot*100).toFixed(1)}%</div>
+          <div class="d-n">${mx(r[2])}</div></div>
+      </div>
+      <div class="blocked"><b>Revisar el origen</b>Los ${mx(ct.tot)} de esta hoja contra ${mx(EM.acum.v)} facturados dan un DSO cercano a 31 días, muy por debajo del que manejas. Es probable que el export esté parcial. No tomes decisiones de cobranza con esta cifra hasta aclararlo.</div>
+    </div>
+    <span class="scrollhint">→ Desliza la tabla</span>
+    <div class="tbl"><table>${H([['Cliente','stick'],['Vendedor',''],['Vencido +60','n'],['Cartera total','n']])}<tbody>
+      ${EM.cartTop.map(t=>`<tr class="click" data-v="${esc(t.vend)}"><td class="stick">${esc(t.n)}</td>
+        <td class="desc">${esc(t.vend)}</td><td class="n neg">${mx(t.venc)}</td><td class="n mut">${mx(t.t)}</td></tr>`).join('')}
+    </tbody></table></div>
+
+    <div class="sec"><h2>Clientes peor servidos <span>${EM.entT.ok} de ${EM.entT.t} OPs conformes en la empresa</span></h2>
+      <div class="gapnote">Cumplimiento por cliente cruzando vendedores, con 4 OPs o más. Un vendedor no ve este corte: solo ve sus propias entregas.</div>
+    </div>
+    <div class="tbl"><table>${H([['Cliente','stick'],['Conformes','n'],['Total','n'],['Cumplimiento','n']])}<tbody>
+      ${EM.entCli.map(e=>`<tr><td class="stick">${esc(e.n)}</td><td class="n">${e.ok}</td><td class="n mut">${e.t}</td>
+        <td class="n">${minibar(e.p,100)}${e.p.toFixed(0)}%</td></tr>`).join('')}
+    </tbody></table></div>`;
+  ligaFilas();
+}
+
+/* --- 3 · PIPELINE --- */
+function dirPipe(){
+  document.getElementById('p-3').innerHTML=`
+    <div class="sec"><h2>Conversión <span id="dc-per">${L.sem}</span></h2>
+      <div class="seg"><button data-dc="s" aria-pressed="true">Semana</button><button data-dc="m" aria-pressed="false">Mes</button><button data-dc="a" aria-pressed="false">Año</button></div>
+      <div class="dual">
+        <div><div class="d-l">Por número de oportunidades</div><div class="d-v" id="dc-tc">—</div><div class="d-n" id="dc-tcn">—</div></div>
+        <div class="alt"><div class="d-l">Por importe</div><div class="d-v" id="dc-tv">—</div><div class="d-n" id="dc-tvn">—</div></div>
+      </div>
+      <div class="gapnote" id="dc-gap"></div>
+    </div>
+    <div class="sec"><h2>Motivos de rechazo <span id="dm-per"></span></h2></div>
+    <span class="scrollhint">→ Desliza la tabla</span>
+    <div class="tbl"><table id="t-dm"></table></div>
+    <div class="sec"><h2>Estado del pipeline</h2>
+      <div class="duo">
+        <div class="fig"><div class="lbl">Oportunidades abiertas</div><div class="val">${EM.pipe.n}</div><div class="note">${mx(EM.pipe.v)} cotizados</div></div>
+        <div class="fig"><div class="lbl">Sin cotizar</div><div class="val" style="color:var(--amber)">${EM.pipe.sin}</div>
+          <div class="note">${(EM.pipe.sin/EM.pipe.n*100).toFixed(0)}% del total</div></div>
+        <div class="fig"><div class="lbl">Detenidas +21 días</div><div class="val" style="color:var(--magenta)">${EM.pipe.det}</div>
+          <div class="note">${mx(EM.pipe.detv)} sin movimiento</div></div>
+        <div class="fig"><div class="lbl">Pedidos por facturar</div><div class="val">${EM.ped.n}</div><div class="note">${mx(EM.ped.v)}</div></div>
+      </div>
+      <div class="blocked"><b>Qué mirar</b>${EM.pipe.sin} de ${EM.pipe.n} oportunidades no tienen importe: están en Pre registro o Listo p/cotizar. El pipeline de ${mx(EM.pipe.v)} solo refleja las ${EM.pipe.n-EM.pipe.sin} cotizadas.</div>
+    </div>`;
+  segBind('dc',x=>{const c=EM.conv[x];
+    document.getElementById('dc-per').textContent=PERL[x];
+    document.getElementById('dm-per').textContent=PERL[x]+` · ${c.p} perdidas`;
+    document.getElementById('dc-tc').textContent=c.ce?c.tc.toFixed(1)+'%':'—';
+    document.getElementById('dc-tcn').textContent=c.ce?`${c.g} ganadas de ${c.ce} cerradas`:'Sin cierres';
+    document.getElementById('dc-tv').textContent=c.ce?c.tv.toFixed(1)+'%':'—';
+    document.getElementById('dc-tvn').textContent=c.ce?`${mx(c.vg)} de ${mx(c.vg+c.vp)}`:'—';
+    const dif=c.tv-c.tc;
+    document.getElementById('dc-gap').innerHTML = !c.ce ? 'Sin cierres en el periodo.'
+      : Math.abs(dif)<3 ? `Convierten parecido por conteo y por importe: el tamaño de la oportunidad no cambia la probabilidad de ganarla.`
+      : dif<0 ? `<b>Pierden las grandes.</b> Convierten ${c.tc.toFixed(1)}% de las oportunidades pero solo ${c.tv.toFixed(1)}% del dinero: ${mx(c.vp)} perdidos contra ${mx(c.vg)} ganados.`
+              : `<b>Ganan las grandes.</b> Convierten ${c.tc.toFixed(1)}% de las oportunidades y ${c.tv.toFixed(1)}% del dinero.`;
+    const M=c.mot, tot=M.reduce((s,m)=>s+m.c,0), totv=M.reduce((s,m)=>s+m.v,0);
+    document.getElementById('t-dm').innerHTML = H([['Motivo','stick'],['Casos','n'],['Peso','n'],['Importe','n'],['','']]) + '<tbody>' +
+      (M.length ? M.map(m=>`<tr><td class="stick">${esc(m.n)}</td><td class="n">${m.c}</td>
+          <td class="n">${(m.c/tot*100).toFixed(1)}%</td><td class="n">${mx(m.v)}</td>
+          <td style="width:100%"><span class="mb" style="width:88px"><i class="bad" style="width:${m.c/tot*100}%"></i></span></td></tr>`).join('')
+        + `<tr class="tot"><td class="stick">Total</td><td class="n">${tot}</td><td class="n">100%</td><td class="n">${mx(totv)}</td><td></td></tr>`
+        : '<tr><td colspan="5" style="padding:16px;color:var(--ink-3)">Sin rechazos en el periodo.</td></tr>') + '</tbody>';
+  });
+}
+
+/* --- 4 · EQUIPO --- */
+function dirEquipo(){
+  let tot={a:0,m:0,s:0,va:0,ma:0,car:0,fal:0,pv:0};
+  const rows=Object.keys(DB).map(v=>{
+    const d=DB[v];
+    const va=d.cli.reduce((s,c)=>s+c.va,0), ma=d.cli.reduce((s,c)=>s+c.ma,0);
+    const car=d.car.reduce((s,c)=>s+c.r.reduce((x,y)=>x+y,0),0);
+    const v90=d.car.reduce((s,c)=>s+c.r[3]+c.r[4],0);
+    const pv=d.ped.reduce((s,o)=>s+o.v,0);
+    const fug=d.fuga.reduce((s,f)=>s+f.v,0);
+    tot.a+=d.fact.a;tot.m+=d.fact.m;tot.s+=d.fact.s;tot.va+=va;tot.ma+=ma;tot.car+=car;tot.fal+=v90;tot.pv+=pv;
+    return {v,a:d.fact.a,m:d.fact.m,s:d.fact.s,p:ma?va/ma*100:null,car,v90,pv,fug};
+  }).filter(r=>r.a>0||r.p!==null).sort((a,b)=>b.a-a.a);
+  const SCP=escala(rows.map(r=>r.p));
+  const con=rows.filter(r=>r.p!==null).sort((a,b)=>a.p-b.p);
+  document.getElementById('p-4').innerHTML=`
+    <div class="sec"><h2>Equipo <span>${rows.length} vendedores</span></h2>
+      <div class="duo">
+        <div class="fig"><div class="lbl">Facturado semana</div><div class="val">${mx(tot.s)}</div></div>
+        <div class="fig"><div class="lbl">Facturado ${L.mes}</div><div class="val">${mx(tot.m)}</div></div>
+        <div class="fig"><div class="lbl">Pedidos por facturar</div><div class="val">${mx(tot.pv)}</div></div>
+        <div class="fig"><div class="lbl">Cartera +60 días</div><div class="val" style="color:var(--magenta)">${mx(tot.fal)}</div></div>
+      </div>
+      <div class="gapnote"><b>La dispersión es de presupuesto, no solo de desempeño.</b> ${esc(con[con.length-1].v)} va al ${con[con.length-1].p.toFixed(0)}% y ${esc(con[0].v)} al ${con[0].p.toFixed(0)}%. Antes de leerlo como resultado del vendedor, conviene revisar cómo se repartió la meta.</div>
+    </div>
+    <div class="sec"><h2>Por vendedor <span>toca un renglón para abrir su reporte</span></h2></div>
+    <span class="scrollhint">→ Desliza la tabla</span>
+    <div class="tbl"><table>${H([['Vendedor','stick'],['Semana','n'],[cap(L.mes.split(' ')[0]),'n'],['Año','n'],['Cumpl. acum.','n'],['Pedidos','n'],['Cartera','n'],['+60 días','n'],['Fuga','n']])}<tbody>
+      ${rows.map(r=>`<tr class="click" data-v="${esc(r.v)}">
+        <td class="stick">${esc(r.v)}</td>
+        <td class="n ${r.s?'':'mut'}">${r.s?mx(r.s):'—'}</td>
+        <td class="n ${r.m?'':'mut'}">${r.m?mx(r.m):'—'}</td>
+        <td class="n">${mx(r.a)}</td>
+        <td class="n">${r.p===null?'<span class="mut">—</span>':minibar(r.p,SCP)+`<span class="${r.p>100?'pos':''}">${r.p.toFixed(0)}%</span>`}</td>
+        <td class="n ${r.pv?'':'mut'}">${r.pv?mx(r.pv):'—'}</td>
+        <td class="n ${r.car?'':'mut'}">${r.car?mx(r.car):'—'}</td>
+        <td class="n ${r.v90?'neg':'mut'}">${r.v90?mx(r.v90):'—'}</td>
+        <td class="n ${r.fug?'amb':'mut'}">${r.fug?mx(r.fug):'—'}</td></tr>`).join('')}
+      <tr class="tot"><td class="stick">${rows.length} vendedores</td><td class="n">${mx(tot.s)}</td><td class="n">${mx(tot.m)}</td>
+        <td class="n">${mx(tot.a)}</td><td class="n">${(tot.va/tot.ma*100).toFixed(0)}%</td><td class="n">${mx(tot.pv)}</td>
+        <td class="n">${mx(tot.car)}</td><td class="n neg">${mx(tot.fal)}</td><td class="n amb">${mx(EM.fugaT.v)}</td></tr>
+    </tbody></table></div>
+    <div class="sec" style="padding-top:8px"><div style="font-size:11.5px;color:var(--ink-3)">
+      «Fuga» es lo que facturaban ene–jun los clientes que llevan dos meses sin comprar.</div></div>`;
+  ligaFilas();
+}
+
+function ligaGrupos(scope){
+  document.querySelectorAll(scope+' tr.grp').forEach(tr=>{
+    if(tr.dataset.lig) return; tr.dataset.lig='1';
+    tr.onclick=()=>{const o=tr.classList.toggle('open');
+      tr.closest('table').querySelectorAll(`tr.sub[data-sub="${tr.dataset.grp}"]`).forEach(x=>x.classList.toggle('show',o));};
+  });
+}
+function ligaFilas(){
+  document.querySelectorAll('tr.click').forEach(tr=>tr.onclick=()=>{
+    pick.value=tr.dataset.v; render(tr.dataset.v);});
+}
+
+/* --- alertas de dirección --- */
+function alertasDir(){
+  const A=[];
+  const ritmo=EM.acum.v/EM.mes, proy=EM.acum.v+ritmo*EM.resto.meses, pp=proy/EM.anual.m*100;
+  if(pp<95) A.push(['m',`<b>La proyección cierra en ${pp.toFixed(0)}% de la meta anual</b> — faltan ${mx(EM.anual.m-proy)}. El último cuatrimestre exige ${mx(EM.resto.m/EM.resto.meses)} mensuales contra ${mx(ritmo)} de ritmo actual.`]);
+  const ms=EM.meses.filter(m=>m.v>0), ult=ms.slice(-3);
+  const bajos=ult.filter(m=>m.v/m.me<1).length;
+  if(bajos===3) A.push(['m',`<b>Tres meses consecutivos por debajo de meta</b> — ${ult.map(m=>MESL[m.m]+' '+Math.round(m.v/m.me*100)+'%').join(', ')}.`]);
+  if(EM.conc.acum['10']>50) A.push(['y',`<b>El top 10 de clientes concentra el ${EM.conc.acum['10']}% de la facturación</b> — ${esc(EM.conc.top[0].n)} solo representa el ${EM.conc.acum['1']}%.`]);
+  const m1=EM.conv.a.mot[0];
+  if(m1 && m1.c/EM.conv.a.p>0.4) A.push(['c',`<b>«${esc(m1.n)}» explica el ${(m1.c/EM.conv.a.p*100).toFixed(0)}% de las oportunidades perdidas</b> — ${m1.c} casos por ${mx(m1.v)}. Vale la pena revisar si son pérdidas reales o proyectos que van a volver.`]);
+  if(EM.fugaT.v/EM.acum.v>0.1) A.push(['y',`<b>${EM.fugaT.n} clientes dejaron de comprar</b> — representaban ${mx(EM.fugaT.v)}, el ${(EM.fugaT.v/EM.acum.v*100).toFixed(0)}% de la facturación del año.`]);
+  document.getElementById('hd-alerts').innerHTML = A.length
+    ? `<div class="alerts"><h3>Atención de dirección</h3>${A.slice(0,4).map(a=>`<div class="alert"><i class="dot ${a[0]}"></i><div>${a[1]}</div></div>`).join('')}</div>` : '';
+}
+
+function pintaAvisos(){
+  const A=EM.avisos||[];
+  document.getElementById('hd-avisos').innerHTML = A.length
+    ? `<div class="alerts"><h3>Avisos de datos · ${SEMLBL}</h3>${A.map(a=>`<div class="alert"><i class="dot ${a.nivel==='critico'?'m':'y'}"></i><div>${a.nivel==='critico'?'<b>Crítico.</b> ':''}${esc(a.msg)}</div></div>`).join('')}</div>` : '';
+}
+
+function direccion(){
+  document.getElementById('hd-who').textContent='Dirección';
+  document.getElementById('hd-sub').textContent=L.sem+' · '+L.rango+' · Litoprocess';
+  pintaNav(NAVD);
+  pintaAvisos(); alertasDir(); dirCierre(); dirRiesgo(); dirPipe(); dirEquipo();
+  window.scrollTo({top:0,behavior:'instant'});
+}
+
+/* ============ ALERTAS ============ */
+/* Reglas 1-5 compiten por pesos en riesgo; la 6 (brecha) solo rellena si faltan. */
+const MESACT=EM.mes;
+const MESL=['','enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+function alertas(d){
+  const C=[], usado=new Set();
+
+  // 1 · Facturas sin ingresar a revisión
+  if(d.fac.length){
+    const m=d.fac.reduce((s,f)=>s+f.v,0), pe=d.fac.slice().sort((a,b)=>b.d-a.d)[0];
+    C.push({p:m,t:'m',cli:[pe.c],x:d.fac.length===1
+      ? `<b>Ingresa la factura ${esc(pe.f)} a revisión</b> — ${esc(pe.c)}, ${mx(pe.v)} esperando desde hace ${pe.d} días. Tu comisión no se libera hasta que se cobre.`
+      : `<b>Ingresa ${d.fac.length} facturas a revisión</b> — ${mx(m)} en total; la de ${esc(pe.c)} lleva ${pe.d} días. Tu comisión no se libera hasta que se cobren.`});
+  }
+  // 2 · Cartera a más de 90 días
+  const v90=d.car.filter(c=>c.r[4]>0).sort((a,b)=>b.r[4]-a.r[4]);
+  if(v90.length){
+    const m=v90.reduce((s,c)=>s+c.r[4],0);
+    C.push({p:m,t:'m',cli:v90.map(c=>c.n),x:v90.length===1
+      ? `<b>Cobra a ${esc(v90[0].n)}</b> — ${mx(v90[0].r[4])} con más de 90 días de vencido.`
+      : `<b>Cobra ${mx(m)} vencido a más de 90 días</b> en ${v90.length} clientes; ${esc(v90[0].n)} concentra ${mx(v90[0].r[4])}.`});
+  }
+  // 3 · Oportunidades detenidas más de 21 días
+  const det=d.ab.filter(o=>o.ds!==null&&o.ds>21).sort((a,b)=>b.ds-a.ds);
+  if(det.length){
+    const m=det.reduce((s,o)=>s+o.v,0), pe=det[0];
+    C.push({p:m,t:'y',cli:det.map(o=>o.c),x:det.length===1
+      ? `<b>Mueve la oportunidad de ${esc(pe.c)}</b> — ${pe.ds} días en «${esc(pe.st)}»${pe.v?', '+mx(pe.v):''}.`
+      : `<b>${det.length} oportunidades llevan más de 21 días sin moverse</b>${m?' — '+mx(m)+' detenidos':''}; la de ${esc(pe.c)} lleva ${pe.ds} días en «${esc(pe.st)}».`});
+  }
+  // 4 · Pedidos sin facturar hace más de 90 días
+  const vie=d.ped.filter(o=>o.d>90).sort((a,b)=>b.d-a.d);
+  if(vie.length){
+    const m=vie.reduce((s,o)=>s+o.v,0), pe=vie[0];
+    C.push({p:m,t:'y',cli:vie.map(o=>o.c),x:vie.length===1
+      ? `<b>Factura o cancela ${esc(pe.op)}</b> — ${esc(pe.c)}, ${mx(pe.v)}, generado hace ${pe.d} días.`
+      : `<b>${vie.length} pedidos llevan más de 90 días sin facturar</b> — ${mx(m)}; el más viejo es de ${esc(pe.c)}, hace ${pe.d} días.`});
+  }
+  // 5 · Clientes que dejaron de comprar
+  if(d.fuga.length){
+    const m=d.fuga.reduce((s,f)=>s+f.v,0), pe=d.fuga[0];
+    // se pondera a ritmo mensual perdido para poder compararla con dinero trabado hoy
+    C.push({p:m/(MESACT-2),t:'c',cli:d.fuga.map(f=>f.n),x:d.fuga.length===1
+      ? `<b>${esc(pe.n)} dejó de comprar</b> — te facturó ${mx(pe.v)} hasta ${MESL[pe.ult]} y lleva dos meses en cero.`
+      : `<b>${d.fuga.length} clientes dejaron de comprar</b> — representaban ${mx(m)} en el año; ${esc(pe.n)} es el más grande con ${mx(pe.v)} hasta ${MESL[pe.ult]}.`});
+  }
+
+  // ordenar por pesos en riesgo y quitar clientes repetidos
+  C.sort((a,b)=>b.p-a.p);
+  const A=[];
+  for(const c of C){
+    if(A.length>=3) break;
+    if(c.cli.length===1 && usado.has(c.cli[0])) continue;
+    A.push(c); c.cli.forEach(n=>usado.add(n));
+  }
+
+  // 6 · Brecha acumulada, solo de relleno
+  if(A.length<3 && d.cli.length){
+    const va=d.cli.reduce((s,c)=>s+c.va,0), ma=d.cli.reduce((s,c)=>s+c.ma,0);
+    if(ma-va>0){
+      const top=d.cli.filter(c=>c.ma-c.va>0).slice(0,3);
+      A.push({t:'c',x:`<b>Llevas ${mx(ma-va)} de brecha acumulada</b> — ${(va/ma*100).toFixed(0)}% de tu presupuesto acumulado. La concentran ${top.map(c=>esc(c.n)).join(', ')}.`});
+    }
+  }
+
+  document.getElementById('hd-alerts').innerHTML = A.length
+    ? `<div class="alerts"><h3>Atender esta semana</h3>${A.map(a=>`<div class="alert"><i class="dot ${a.t}"></i><div>${a.x}</div></div>`).join('')}</div>`
+    : '';
+}
+
+/* ============ VENTAS ============ */
+function ventas(d){
+  const S=[
+    {lbl:L.mes,            sub:'mes',num:'vm',den:'mm', v:d.cli.reduce((s,c)=>s+c.vm,0), meta:d.cli.reduce((s,c)=>s+c.mm,0)},
+    {lbl:L.acu, sub:'acu',num:'va',den:'ma', v:d.cli.reduce((s,c)=>s+c.va,0), meta:d.cli.reduce((s,c)=>s+c.ma,0)},
+    {lbl:'Contra meta anual total',sub:'anu',num:'va',den:'man',v:d.cli.reduce((s,c)=>s+c.va,0), meta:d.cli.reduce((s,c)=>s+c.man,0)}
+  ];
+  let presup='';
+  if(d.cli.length){
+    S.forEach(s=>{
+      const p=s.meta?s.v/s.meta*100:0;
+      const filas=d.cli.map(c=>({n:c.n,b:c.b,hijos:c.hijos,f:c[s.num],m:c[s.den],gap:c[s.den]-c[s.num],p:c[s.den]?c[s.num]/c[s.den]*100:null}))
+        .filter(c=>c.f||c.m||c.b).sort((a,b)=>b.gap-a.gap);
+      const SC=escala(filas.map(c=>c.p).concat([p]));
+      const body=filas.map((c,ci)=>{
+        const gt=c.gap>0?'−'+mx(c.gap):c.gap<0?'+'+mx(-c.gap):'—';
+        const gc=c.gap<0?'pos':c.gap>0&&c.p!==null&&c.p<60?'neg':c.gap>0?'amb':'mut';
+        const bb=c.p===null?'<span class="mut">sin meta</span>'
+          :minibar(c.p,SC)+`<span class="${c.p>100?'pos':''}">${c.p.toFixed(0)}%</span>`;
+        const hj=c.hijos||[];
+        if(c.b){
+          const hv=hj.filter(h=>h[s.num]>0).sort((a,b)=>b[s.num]-a[s.num]);
+          const gid=s.sub+'-'+ci;
+          return `<tr class="grp" data-grp="${gid}"><td class="stick"><span class="gchev">▶</span>${esc(c.n)}`
+            + (hv.length?` <span class="tag t-cli">${hv.length}</span>`:' <span class="tag t-cli">Bolsa</span>')
+            + `</td><td class="n">${mx(c.f)}</td><td class="n mut">${c.m?mx(c.m):'—'}</td>
+            <td class="n ${gc}">${gt}</td><td class="n">${bb}</td></tr>`
+            + (hv.length?hv.map(h=>`<tr class="sub" data-sub="${gid}"><td class="stick">${esc(h.n)}</td>
+                <td class="n">${mx(h[s.num])}</td><td class="n mut">—</td><td class="n mut">—</td><td class="n mut">—</td></tr>`).join('')
+              :`<tr class="sub" data-sub="${gid}"><td class="stick" colspan="5" style="color:var(--ink-3)">Sin clientes nuevos facturados en el periodo.</td></tr>`);
+        }
+        return `<tr><td class="stick">${esc(c.n)}</td>
+          <td class="n">${mx(c.f)}</td><td class="n mut">${c.m?mx(c.m):'—'}</td>
+          <td class="n ${gc}">${gt}</td><td class="n">${bb}</td></tr>`}).join('')
+        + `<tr class="tot"><td class="stick">Total</td><td class="n">${mx(s.v)}</td><td class="n">${mx(s.meta)}</td>
+           <td class="n ${s.meta-s.v>0?'neg':'pos'}">${s.meta-s.v>0?'−'+mx(s.meta-s.v):'+'+mx(s.v-s.meta)}</td>
+           <td class="n">${p.toFixed(1)}%</td></tr>`;
+      presup += `<div class="fig exp"><button class="fig-hd" aria-expanded="false">
+          <div class="lbl"><span>${s.lbl}</span><span class="chev">▶</span></div>
+          <div class="pb">${bar(p,SC,true)}
+            <div class="pb-meta"><span>${mx(s.v)} de ${mx(s.meta)}</span><b class="${p>100?'pos':''}">${p.toFixed(1)}%</b></div>
+            ${SC>100?`<div class="pb-scale"><span>0%</span><span>la marca es la meta</span><span>${SC}%${filas.some(c=>c.p>SC)?' y más':''}</span></div>`:''}
+          </div></button>
+        <div class="fig-bd"><span class="scrollhint" style="padding:6px 15px 0">→ Desliza la tabla</span>
+          <div class="tbl"><table>${H([['Cliente','stick'],['Facturado','n'],['Meta','n'],['Falta','n'],['Cumpl.','n']])}<tbody>${body}</tbody></table></div></div></div>`;
+    });
+  } else {
+    presup='<div class="blocked"><b>Sin presupuesto</b>Este vendedor no tiene renglones en la hoja de Presupuesto, aunque sí registra facturación.</div>';
+  }
+  const sep=d.cli.filter(c=>c.sep>0).sort((a,b)=>b.sep-a.sep);
+  const sepT=sep.reduce((s,c)=>s+c.sep,0);
+  const pedT=d.ped.reduce((s,o)=>s+o.v,0), ptT=d.ped.reduce((s,o)=>s+o.pt,0);
+  document.getElementById('p-1').innerHTML = `
+    <div class="sec"><h2>Facturación <span id="fact-per">${L.sem}</span></h2>
+      <div class="seg"><button data-fact="s" aria-pressed="true">Semana</button><button data-fact="m" aria-pressed="false">Mes</button><button data-fact="a" aria-pressed="false">Año</button></div>
+      ${d.fact.s>d.fact.m?`<div class="banner" style="border:1px solid var(--rule);border-bottom:0;margin:0">La semana ${L.sem.split(' ')[1]} cruza dos meses, así que la facturación semanal no cabe dentro del mes en curso.</div>`:''}
+      <div class="fig exp" id="fact-card"><button class="fig-hd" aria-expanded="false">
+          <div class="lbl"><span>Facturado</span><span class="chev">▶</span></div>
+          <div class="val" id="fact-val">${mx(d.fact.s)}</div>
+          <div class="note" id="fact-note">${d.fact.cs} cliente(s) · ${d.fact.os} OPs cerradas</div></button>
+        <div class="fig-bd"><div class="tbl"><table id="t-factcli"></table></div></div></div>
+    </div>
+    <div class="sec"><h2>Cumplimiento de presupuesto <span>${d.cli.length?'toca cada tarjeta':''}</span></h2>${presup}</div>
+    ${sep.length?`<div class="sec"><h2>Presupuesto de ${cap(L.sig)} <span>${mx(sepT)}</span></h2></div>
+      <div class="tbl"><table>${H([['Cliente','stick'],['Meta '+L.sig,'n']])}<tbody>
+      ${sep.map(c=>`<tr><td class="stick">${esc(c.n)}${c.b?' <span class="tag t-cli">Bolsa</span>':''}</td>
+        <td class="n">${mx(c.sep)}</td></tr>`).join('')}
+      <tr class="tot"><td class="stick">Total</td><td class="n">${mx(sepT)}</td></tr></tbody></table></div>`:''}
+    ${d.ped.length?`<div class="sec"><h2>Pedidos pendientes <span>${d.ped.length} OPs · ${mx(pedT)}</span></h2></div>
+      <span class="scrollhint">→ Desliza la tabla</span>
+      <div class="tbl"><table>${H([['Pedido','stick'],['Cliente',''],['Concepto',''],['Generado',''],['Antigüedad','n'],['Importe','n']])}<tbody>
+      ${d.ped.map((o,oi)=>{
+        const uni=o.pt===1;
+        const gid='pd-'+oi;
+        const cab=`<tr class="${uni?'':'grp'}"${uni?'':` data-grp="${gid}"`}>
+          <td class="stick mono" style="font-size:12px">${uni?'':'<span class="gchev">▶</span>'}${esc(o.op)}</td>
+          <td>${esc(o.c)}</td>
+          <td class="desc">${uni?esc(o.ln[0].d):`<span class="mut">${o.pt} partidas</span>`}</td>
+          <td class="mono" style="font-size:12px">${fdia(o.f)}</td>
+          <td class="n ${o.d>120?'amb':'mut'}">${o.d>0?o.d+' d':'—'}</td>
+          <td class="n">${mx(o.v)}</td></tr>`;
+        return uni?cab:cab+o.ln.map(l=>`<tr class="sub" data-sub="${gid}"><td class="stick"></td><td></td>
+          <td class="desc">${esc(l.d)}</td><td></td><td></td><td class="n">${mx(l.v)}</td></tr>`).join('');
+      }).join('')}
+      <tr class="tot"><td class="stick">${d.ped.length} pedidos</td><td></td><td class="n mut">${ptT} partidas</td><td></td><td></td><td class="n">${mx(pedT)}</td></tr></tbody></table></div>`
+      :'<div class="sec"><h2>Pedidos pendientes</h2></div><div class="blocked"><b>Sin pedidos pendientes</b>No hay OPs abiertas para este vendedor.</div>'}`;
+  segBind('fact',x=>{
+    const m={s:[L.sem,d.fact.s,`${d.fact.cs} cliente(s) · ${d.fact.os} OPs cerradas`],
+             m:[L.mes+' a la fecha',d.fact.m,`${d.fact.cm} clientes · ${d.fact.om} OPs cerradas`],
+             a:[L.ano,d.fact.a,`${d.fact.ca} clientes · ${d.fact.oa} OPs cerradas`]}[x];
+    document.getElementById('fact-per').textContent=m[0];
+    document.getElementById('fact-val').textContent=mx(m[1]);
+    document.getElementById('fact-note').textContent=m[2];
+    const FC=d.factCli[x]||[];
+    const T=document.getElementById('t-factcli');
+    if(!FC.length){
+      T.innerHTML='<tbody><tr><td style="padding:14px;font-size:12.5px;color:var(--ink-3)">Sin facturación en el periodo.</td></tr></tbody>';
+    } else {
+      const tt=FC.reduce((s,c)=>s+c.v,0);
+      T.innerHTML=H([['Cliente','stick'],['Facturado','n'],['Peso','n']])+'<tbody>'+
+        FC.map(c=>`<tr><td class="stick">${esc(c.n)}</td><td class="n ${c.v<0?'neg':''}">${mx(c.v)}</td>
+          <td class="n mut">${(c.v/tt*100).toFixed(1)}%</td></tr>`).join('')+
+        `<tr class="tot"><td class="stick">${FC.length} clientes</td><td class="n">${mx(tt)}</td><td class="n">100%</td></tr></tbody>`;
+    }});
+  document.querySelectorAll('#p-1 .fig-hd').forEach(b=>b.onclick=()=>{
+    const el=b.parentElement,o=el.classList.toggle('open');b.setAttribute('aria-expanded',o)});
+  ligaGrupos('#p-1');
+}
+
+/* ============ OPORTUNIDADES ============ */
+function oport(d){
+  const abT=d.ab.reduce((s,o)=>s+o.v,0);
+  document.getElementById('p-2').innerHTML = `
+    <div class="sec"><h2>Conversión <span id="op-per">${L.sem}</span></h2>
+      <div class="seg"><button data-op="s" aria-pressed="true">Semana</button><button data-op="m" aria-pressed="false">Mes</button><button data-op="a" aria-pressed="false">Año</button></div>
+      <div class="duo">
+        <div class="fig"><div class="lbl">Cerradas</div><div class="val" id="op-ce">—</div><div class="note">En el periodo</div></div>
+        <div class="fig"><div class="lbl">Ganadas</div><div class="val" id="op-g" style="color:var(--ok)">—</div><div class="note">Pasaron a OP</div></div>
+        <div class="fig"><div class="lbl">Perdidas</div><div class="val" id="op-p" style="color:var(--magenta)">—</div><div class="note">Con motivo de rechazo</div></div>
+        <div class="fig"><div class="lbl">Emitidas</div><div class="val" id="op-em">—</div><div class="note" id="op-emn">Alta en el periodo</div></div>
+      </div>
+      <div class="fig"><div class="lbl">Tasa de conversión</div>
+        <div class="pb"><div class="pb-track" style="height:11px"><div class="pb-fill" id="op-bar" style="width:0%"></div></div>
+          <div class="pb-meta"><span id="op-frac">—</span><b id="op-tc">—</b></div></div>
+        <div class="note" style="margin-top:9px">Ganadas entre cerradas. «Emitidas» cuenta altas del periodo y no es comparable: son oportunidades distintas.</div></div>
+    </div>
+    ${d.ab.length?`<div class="sec"><h2>Oportunidades abiertas <span id="ab-cnt">${d.ab.length} · ${mx(abT)} cotizados</span></h2>
+        <div class="chips" id="ab-chips"></div></div>
+      <span class="scrollhint">→ Desliza la tabla</span>
+      <div class="tbl"><table id="t-ab"></table></div>`
+      :'<div class="sec"><h2>Oportunidades abiertas</h2></div><div class="blocked"><b>Ninguna abierta</b>No hay oportunidades vivas en Candy para este vendedor.</div>'}
+    <div class="sec"><h2>Motivos de rechazo <span id="rz-per"></span></h2>
+      <div class="seg"><button data-rz="s" aria-pressed="true">Semana</button><button data-rz="m" aria-pressed="false">Mes</button><button data-rz="a" aria-pressed="false">Año</button></div></div>
+    <div class="tbl"><table id="t-rz"></table></div>`;
+  if(d.ab.length){
+    const ES={}; d.ab.forEach(o=>{ES[o.st]=(ES[o.st]||0)+1});
+    const orden=Object.keys(ES).sort((a,b)=>ES[b]-ES[a]);
+    document.getElementById('ab-chips').innerHTML =
+      `<button class="chip" data-es="__all" aria-pressed="true">Todos <b>${d.ab.length}</b></button>` +
+      orden.map(s=>`<button class="chip" data-es="${esc(s)}" aria-pressed="false">${esc(s)} <b>${ES[s]}</b></button>`).join('');
+    const pintaAb=f=>{
+      const L=f==='__all'?d.ab:d.ab.filter(o=>o.st===f);
+      const tv=L.reduce((s,o)=>s+o.v,0);
+      document.getElementById('ab-cnt').textContent=`${L.length} · ${mx(tv)} cotizados`;
+      const gr={}; L.forEach(o=>{(gr[o.sem]=gr[o.sem]||[]).push(o)});
+      const cuerpo=Object.keys(gr).sort().reverse().map(sem=>{
+        const G=gr[sem], sv=G.reduce((s,o)=>s+o.v,0);
+        return `<tr class="wk"><td class="stick">${esc(sem.replace('-W',' · semana '))}</td>
+          <td class="mut" style="font-size:12px">${G.length} oportunidad${G.length===1?'':'es'}</td>
+          <td></td><td></td><td></td><td class="n">${sv?mx(sv):'—'}</td></tr>`
+          + G.map(o=>`<tr><td class="stick">${esc(o.c)}${o.tc!=='Cliente'?` <span class="tag ${o.tc==='Prospecto'?'t-pro':'t-can'}">${o.tc}</span>`:''}</td>
+            <td class="desc">${esc(o.d)}</td><td><span class="tag t-est">${esc(o.st)}</span></td>
+            <td class="n ${o.ds>14?'neg':'mut'}">${o.ds===null?'—':o.ds}</td>
+            <td class="n ${o.da>60?'neg':'mut'}">${o.da}</td>
+            <td class="n ${o.v?'':'mut'}">${o.v?mx(o.v):'sin cotizar'}</td></tr>`).join('');
+      }).join('');
+      document.getElementById('t-ab').innerHTML =
+        H([['Cliente','stick'],['Descripción',''],['Estatus',''],['Días est.','n'],['Días abierta','n'],['Importe','n']])
+        + '<tbody>' + (L.length?cuerpo:'<tr><td colspan="6" style="padding:16px;color:var(--ink-3)">Sin oportunidades en este estatus.</td></tr>')
+        + `<tr class="tot"><td class="stick">${L.length} abiertas</td><td></td><td></td><td></td><td></td><td class="n">${mx(tv)}</td></tr></tbody>`;
+    };
+    document.querySelectorAll('#ab-chips .chip').forEach(b=>{
+      b.onclick=()=>{document.querySelectorAll('#ab-chips .chip').forEach(x=>x.setAttribute('aria-pressed','false'));
+        b.setAttribute('aria-pressed','true');pintaAb(b.dataset.es)};});
+    pintaAb('__all');
+  }
+  segBind('op',x=>{const c=d.conv[x];
+    document.getElementById('op-per').textContent=PERL[x];
+    document.getElementById('op-ce').textContent=c.ce;
+    document.getElementById('op-g').textContent=c.g;
+    document.getElementById('op-p').textContent=c.p;
+    document.getElementById('op-em').textContent=c.em;
+    document.getElementById('op-emn').textContent = c.emab
+      ? `${c.emab} siguen abiertas` : 'Alta en el periodo';
+    document.getElementById('op-frac').textContent = c.ce
+      ? `${c.g} ganadas de ${c.ce} cerradas` : 'Sin cierres en el periodo';
+    document.getElementById('op-tc').textContent = c.ce ? c.tc.toFixed(1)+'%' : '—';
+    const b=document.getElementById('op-bar'); b.style.width=(c.ce?c.tc:0)+'%';
+    b.className='pb-fill '+(!c.ce?'':c.tc>=d.conv.a.tc?'good':c.tc>=d.conv.a.tc-8?'warn':'bad')});
+  segBind('rz',x=>{const m=d.mot[x];
+    document.getElementById('rz-per').textContent=PERL[x]+` · ${m.n} rechazos`;
+    const tv=m.d.reduce((s,t)=>s+t.v,0);
+    document.getElementById('t-rz').innerHTML = H([['Motivo','stick'],['Casos','n'],['Peso','n'],['Importe','n'],['','']]) + '<tbody>' +
+      (m.d.length ? m.d.map((t,ti)=>{
+          const gid='rz-'+x+'-'+ti;
+          return `<tr class="grp" data-grp="${gid}"><td class="stick"><span class="gchev">▶</span>${esc(t.n)}</td>
+            <td class="n">${t.c}</td><td class="n">${(t.c/m.n*100).toFixed(0)}%</td><td class="n">${mx(t.v)}</td>
+            <td style="width:100%"><span class="mb" style="width:88px"><i class="bad" style="width:${t.c/m.n*100}%"></i></span></td></tr>`
+            + t.det.map(z=>`<tr class="sub" data-sub="${gid}"><td class="stick">${esc(z.c)}</td><td></td>
+                <td class="mut" style="font-size:11.5px">${fdia(z.f)}</td><td class="n">${mx(z.v)}</td><td></td></tr>`).join('')
+            + (t.c>t.det.length?`<tr class="sub" data-sub="${gid}"><td class="stick mut" colspan="5" style="font-size:11.5px">y ${t.c-t.det.length} más</td></tr>`:'');
+        }).join('')
+        + `<tr class="tot"><td class="stick">Total</td><td class="n">${m.n}</td><td class="n">100%</td><td class="n">${mx(tv)}</td><td></td></tr>`
+        : '<tr><td colspan="5" style="padding:16px;color:var(--ink-3)">Sin rechazos en este periodo.</td></tr>') + '</tbody>';
+    ligaGrupos('#p-2');});
+}
+
+/* ============ SEGUIMIENTO ============ */
+function segui(d){
+  const A=d.act||{hechas:[],prox:[],noreal:[],venc:[],ano:0};
+  const actT=(t,rows,venc)=>`<div class="tbl"><table>${H([['Fecha','stick'],['Cliente',''],['Actividad',''],venc?['Días','n']:['Minuta','n']])}<tbody>${
+    rows.length?rows.map(a=>`<tr><td class="stick mono" style="font-size:12px">${fdia(a.f)}</td><td>${esc(a.c)}</td>
+      <td class="desc">${esc(a.t)}</td>${venc?`<td class="n neg">${a.d}</td>`
+      :`<td class="n">${a.m?'<span class="tag t-ok">Sí</span>':'<span class="mut">No</span>'}</td>`}</tr>`).join('')
+    :`<tr><td colspan="4" style="padding:16px;color:var(--ink-3)">${t}</td></tr>`}</tbody></table></div>`;
+  let ent='';
+  if(d.en.t){
+    const p=d.en.ok/d.en.t*100, fall=d.en.t-d.en.ok;
+    const puntual=d.ennc.filter(e=>e.dd!==null&&e.dd<=0).length;
+    ent = `<div class="sec"><h2>Cumplimiento de entregas <span>Año a la fecha</span></h2>
+      <div class="fig"><div class="lbl">OPs entregadas conforme</div>
+        <div class="pb">${bar(p,100,true)}
+          <div class="pb-meta"><span>${d.en.ok} de ${d.en.t} OPs</span><b>${p.toFixed(1)}%</b></div></div></div>
+      ${fall?`<div class="gapnote"><b>${fall} OP(s) no cumplieron.</b> El indicador pondera fecha, cantidad entregada, tiempo de respuesta y fecha de última entrega.${puntual?` ${puntual} llegaron en fecha, así que fallaron en otra dimensión.`:''}</div>`:''}
+      </div>
+      <div class="sec"><h2>Detalle de entregas <span>${d.en.t} OPs</span></h2>
+        <div class="seg"><button data-flt="nc" aria-pressed="true">No cumplieron</button><button data-flt="ok" aria-pressed="false">Cumplieron</button><button data-flt="all" aria-pressed="false">Todas</button></div></div>
+      <span class="scrollhint">→ Desliza la tabla</span>
+      <div class="tbl"><table id="t-ent"></table></div>`;
+  } else {
+    ent='<div class="sec"><h2>Cumplimiento de entregas</h2></div><div class="blocked"><b>Sin entregas</b>No hay OPs entregadas registradas para este vendedor.</div>';
+  }
+  document.getElementById('p-3').innerHTML = `
+    <div class="sec"><h2>Actividad realizada <span>${L.sem} · ${A.hechas.length}</span></h2></div>${actT('Sin actividades registradas esta semana en Candy.',A.hechas)}
+    ${A.noreal.length?`<div class="sec"><h2>Citas programadas que no se realizaron <span>${L.sem} · ${A.noreal.length}</span></h2></div>
+      <div class="gapnote">Estaban planificadas esta misma semana y no se marcaron como realizadas. O se hicieron y falta cerrarlas en Candy, o no ocurrieron.</div>
+      ${actT('',A.noreal,true)}`:''}
+    ${A.venc.length?`<div class="sec"><h2>Citas planificadas sin actualizar <span>${A.venc.length}</span></h2></div>
+      <div class="gapnote">Son de semanas anteriores, siguen marcadas como planificadas. O se realizaron y falta cerrarlas en Candy, o no ocurrieron.</div>
+      ${actT('',A.venc,true)}`:''}
+    <div class="sec"><h2>Próximas citas <span>${A.prox.length}</span></h2></div>${actT('Sin citas programadas.',A.prox)}
+    ${ent}`;
+  if(d.en.t){
+    const pinta=f=>{
+      const rows=d.ennc.filter(e=> f==='all'?true : f==='ok'? e.ok===1 : e.ok===0);
+      document.getElementById('t-ent').innerHTML =
+        H([['OP','stick'],['Cliente',''],['Compromiso',''],['Entrega',''],['Desv.','n'],['Cumple','n']]) + '<tbody>' +
+        (rows.length ? rows.map(e=>`<tr><td class="stick mono" style="font-size:12px">${esc(e.op)}</td><td>${esc(e.c)}</td>
+            <td class="mono" style="font-size:12px">${fdia(e.cm)}</td><td class="mono" style="font-size:12px">${fdia(e.fe)}</td>
+            <td class="n ${e.dd>0?'neg':'mut'}">${e.dd===null?'—':e.dd>0?'+'+e.dd+' d':e.dd<0?e.dd+' d':'en fecha'}</td>
+            <td class="n">${e.ok?'<span class="tag t-ok">Sí</span>':'<span class="tag t-no">No</span>'}</td></tr>`).join('')
+          : '<tr><td colspan="6" style="padding:16px;color:var(--ink-3)">Sin OPs en este filtro.</td></tr>') + '</tbody>';
+    };
+    document.querySelectorAll('[data-flt]').forEach(b=>{
+      b.onclick=()=>{document.querySelectorAll('[data-flt]').forEach(x=>x.setAttribute('aria-pressed','false'));
+        b.setAttribute('aria-pressed','true');pinta(b.dataset.flt)};
+    });
+    pinta('nc');
+  }
+}
+
+/* ============ COBRANZA ============ */
+function cobranza(d){
+  const T=[0,0,0,0,0]; d.car.forEach(c=>c.r.forEach((v,i)=>T[i]+=v));
+  const tot=T.reduce((a,b)=>a+b,0);
+  const facT=d.fac.reduce((s,f)=>s+f.v,0);
+  document.getElementById('p-4').innerHTML = `
+    ${d.car.length?`<div class="sec"><h2>Cartera por antigüedad <span>Total ${mx(tot)}</span></h2></div>
+      <span class="scrollhint">→ Desliza la tabla</span>
+      <div class="tbl"><table>${H([['Cliente','stick'],['Docs','n'],['Corriente','n'],['0–30','n'],['31–60','n'],['61–90','n'],['+90','n'],['Total','n'],['Días venc.','n']])}<tbody>
+      ${d.car.slice().sort((a,b)=>(b.r[3]+b.r[4])-(a.r[3]+a.r[4])||b.r.reduce((x,y)=>x+y,0)-a.r.reduce((x,y)=>x+y,0)).map(c=>{
+        const t=c.r.reduce((a,b)=>a+b,0);
+        return `<tr><td class="stick">${esc(c.n)}${c.blq?' <span class="tag t-no">Bloqueado</span>':''}</td><td class="n mut">${c.docs||'—'}</td>`+
+          c.r.map((v,i)=>`<td class="n ${!v?'mut':i>=3?'neg':i===2?'amb':''}">${v?k(v):'—'}</td>`).join('')+
+          `<td class="n">${k(t)}</td><td class="n ${c.dias>1000?'neg':c.dias>90?'amb':'mut'}">${c.dias||'—'}</td></tr>`}).join('')}
+      <tr class="tot"><td class="stick">Total</td><td></td>${T.map((v,i)=>`<td class="n ${i>=3?'neg':i===2?'amb':''}">${k(v)}</td>`).join('')}
+      <td class="n">${k(tot)}</td><td></td></tr></tbody></table></div>
+      <div class="sec" style="padding-top:8px"><div style="font-size:11.5px;color:var(--ink-3)">Cifras en miles de pesos. «Bloqueado» se deriva de pedidos detenidos por crédito.</div></div>`
+      :'<div class="sec"><h2>Cartera</h2></div><div class="blocked"><b>Sin cartera</b>Este vendedor no tiene saldos asignados.</div>'}
+    <div class="sec"><h2>Comisiones <span>${L.ano}</span></h2>
+      ${d.com.dev>0?`
+      <div class="fig"><div class="lbl">Tus ventas del año han generado</div>
+        <div class="val">${mx(d.com.dev)}</div><div class="note">en comisiones</div></div>
+      <div class="reparto">
+        <div class="rp"><div class="rp-l">Ya se te pagó</div>
+          <div class="rp-v" style="color:var(--ok)">${mx(d.com.pag)}</div>
+          <div class="rp-n">${(d.com.pag/d.com.dev*100).toFixed(0)}% de lo generado</div></div>
+        <div class="rp"><div class="rp-l">Esperando cobranza</div>
+          <div class="rp-v" style="color:var(--amber)">${mx(d.com.pen)}</div>
+          <div class="rp-n">Se libera cuando el cliente pague la factura</div></div>
+        <div class="rp"><div class="rp-l">Retenido por cumplimiento</div>
+          <div class="rp-v" style="color:var(--magenta)">${mx(d.com.ret)}</div>
+          <div class="rp-n">${(d.com.ret/d.com.dev*100).toFixed(0)}% de lo generado · se devuelve por trimestre si alcanzas la meta</div></div>
+      </div>
+      <div class="gapnote"><b>De ${mx(d.com.dev)} que generaste, ya tienes ${mx(d.com.pag)}.</b>${d.com.pen>0?` Otros ${mx(d.com.pen)} llegan en cuanto se cobren tus facturas: eso depende de tu cobranza, no de tu venta.`:''}${d.com.ret>0?` Y ${mx(d.com.ret)} están retenidos hasta el cierre de trimestre, sujetos a tu cumplimiento contra meta.`:''}</div>
+      ${Math.abs(d.com.dev-(d.com.pag+d.com.pen))>1?`<div class="blocked" style="margin:0"><b>Verificar</b>Pagado más pendiente suma ${mx(d.com.pag+d.com.pen)}, no ${mx(d.com.dev)}: faltan ${mx(d.com.dev-(d.com.pag+d.com.pen))} por explicar.</div>`:''}`
+      :'<div class="blocked" style="margin:0"><b>Sin comisiones</b>Este vendedor no tiene comisión devengada en el año.</div>'}
+    </div>
+    ${d.fac.length?`<div class="sec"><h2>Facturas sin ingresar a revisión <span>${d.fac.length} · ${mx(facT)}</span></h2></div>
+      <div class="tbl"><table>${H([['Folio','stick'],['Cliente',''],['Emitida',''],['Días','n'],['Importe','n']])}<tbody>
+      ${d.fac.slice().sort((a,b)=>b.d-a.d).map(f=>`<tr><td class="stick mono" style="font-size:12px">${esc(f.f)}</td><td>${esc(f.c)}</td>
+        <td class="mono" style="font-size:12px">${fdia(f.e)}</td><td class="n ${f.d>10?'neg':''}">${f.d}</td>
+        <td class="n">${mx(f.v)}</td></tr>`).join('')}
+      ${d.fac.length>1?`<tr class="tot"><td class="stick">${d.fac.length} facturas</td><td></td><td></td><td></td><td class="n">${mx(facT)}</td></tr>`:''}</tbody></table></div>`
+      :'<div class="sec"><h2>Facturas sin ingresar a revisión</h2></div><div class="blocked"><b>Ninguna</b>Todas las facturas están ingresadas.</div>'}`;
+}
+
+function segBind(attr,fn){
+  document.querySelectorAll(`[data-${attr}]`).forEach(b=>{
+    b.onclick=()=>{document.querySelectorAll(`[data-${attr}]`).forEach(x=>x.setAttribute('aria-pressed','false'));
+      b.setAttribute('aria-pressed','true');fn(b.dataset[attr])};
+  });
+  const first=document.querySelector(`[data-${attr}="s"]`);
+  if(first){fn('s');first.setAttribute('aria-pressed','true')}
+}
+
+function render(v){
+  document.getElementById('hd-avisos').innerHTML='';
+  if(v==='__all'){direccion();return}
+  const d=DB[v];
+  document.getElementById('hd-who').textContent=v;
+  document.getElementById('hd-sub').textContent=L.sem+' · '+L.rango+' · Litoprocess';
+  pintaNav(NAVV);
+  alertas(d); ventas(d); oport(d); segui(d); cobranza(d);
+  window.scrollTo({top:0,behavior:'instant'});
+}
+pick.onchange=()=>render(pick.value);
+
+render(SOLO || '__all');
+</script>
