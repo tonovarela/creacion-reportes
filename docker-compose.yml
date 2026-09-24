@@ -5,7 +5,24 @@ services:
     volumes:
       - ./entrada:/data/entrada:ro
       - ./salida:/data/salida
-      - ./estado:/data/estado
     environment:
       BASE_URL: ${BASE_URL:-}
       DIRECCION_CORREO: ${DIRECCION_CORREO:-}
+      TOKEN_SECRETO: ${TOKEN_SECRETO:?Falta TOKEN_SECRETO en .env}
+
+  # saca el Excel de la semana desde SQL Server y lo deja en ./entrada
+  extraer:
+    build: .
+    image: TU_USUARIO/reportes-ventas:latest
+    entrypoint: ["python", "/app/extraer_excel.py"]
+    command: []
+    volumes:
+      - ./entrada:/data/entrada
+    environment:
+      ENTRADA: /data/entrada
+      SQL_SERVIDOR: ${SQL_SERVIDOR:-}
+      SQL_PUERTO: ${SQL_PUERTO:-1433}
+      SQL_BASE_DATOS: ${SQL_BASE_DATOS:-}
+      SQL_USUARIO: ${SQL_USUARIO:-}
+      SQL_CONTRASENA: ${SQL_CONTRASENA:-}
+      SQL_TIMEOUT: ${SQL_TIMEOUT:-600}

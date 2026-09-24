@@ -1,4 +1,8 @@
 *
 !gen.py
+!entorno.py
+!extraer_excel.py
 !plantilla.html
 !requirements.txt
+!sql/
+!sql/*.sql

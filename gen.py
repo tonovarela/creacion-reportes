@@ -1,21 +1,9 @@
 
 
-import pandas as pd, json, math, os, hashlib, secrets
+import pandas as pd, json, math, os, hmac, hashlib
 import sys, glob
-# .env junto a gen.py (opcional): una variable KEY=valor por línea. No pisa lo que ya venga
-# definido en el entorno. Rutas relativas de ENTRADA/SALIDA/ESTADO se resuelven contra la
-# carpeta del proyecto, para que dé igual desde dónde se ejecute.
-BASE=os.path.dirname(os.path.abspath(__file__))
-def cargar_env(ruta):
-    if not os.path.exists(ruta): return
-    for l in open(ruta,encoding='utf-8'):
-        l=l.strip()
-        if not l or l.startswith('#') or '=' not in l: continue
-        k,v=l.split('=',1); k=k.strip(); v=v.strip().strip('"\'')
-        if k in ('ENTRADA','SALIDA','ESTADO') and v and not os.path.isabs(v):
-            v=os.path.normpath(os.path.join(BASE,v))
-        os.environ.setdefault(k,v)
-cargar_env(os.path.join(BASE,'.env'))
+from entorno import cargar_env
+cargar_env()
 def hallar():
     p=sys.argv[1] if len(sys.argv)>1 else os.environ.get('ENTRADA')
     if p:
@@ -30,6 +18,11 @@ def hallar():
     raise SystemExit('No encontré ningún .xlsx. Uso: python gen.py <archivo-o-carpeta>, o define ENTRADA')
 ARCH=hallar()
 SAL=os.environ.get('SALIDA','/mnt/user-data/outputs')
+# clave para firmar los tokens: sin ella, el token saldría solo del nombre y sería adivinable
+SECRETO=os.environ.get('TOKEN_SECRETO','')
+if len(SECRETO)<32:
+    raise SystemExit('Falta TOKEN_SECRETO (mínimo 32 caracteres) en el .env o el entorno. Genera uno con:\n'
+                     '  python3 -c "import secrets;print(secrets.token_hex(32))"')
 print('Archivo:',ARCH)
 
 AVISOS=[]
@@ -37,20 +30,7 @@ def aviso(nivel,msg):
     AVISOS.append({'nivel':nivel,'msg':msg})
     print(('  [CRÍTICO] ' if nivel=='critico' else '  [aviso] ')+msg)
 
-# estado.json vive junto al xlsx (o donde diga ESTADO) para comparar contra la corrida anterior
-ESTADO=os.environ.get('ESTADO', os.path.join(os.path.dirname(os.path.abspath(ARCH)) or '.','estado.json'))
-prev={}
-if os.path.exists(ESTADO):
-    try: prev=json.load(open(ESTADO))
-    except Exception: prev={}
-
 x=pd.ExcelFile(ARCH); S={s:pd.read_excel(x,s) for s in x.sheet_names}
-
-# frescura: si una hoja llega idéntica a la semana pasada, probablemente no se regeneró
-HASH_HOJAS={s:hashlib.sha256(S[s].to_csv(index=False).encode('utf-8')).hexdigest() for s in S}
-for _s in HASH_HOJAS:
-    if prev.get('hashes',{}).get(_s)==HASH_HOJAS[_s]:
-        aviso('critico', f'La hoja «{_s}» llegó idéntica a la semana pasada — probablemente no se regeneró.')
 H0=S['Encabezado']
 FIN=pd.Timestamp(H0.fecha_fin.max()); INI=pd.Timestamp(H0.fecha_inicio.min())
 SEM=str(H0.semana_iso.iloc[0]); MESACT=int(FIN.month)
@@ -69,12 +49,7 @@ H=S['Encabezado'].groupby('vn',as_index=False).agg({
  'comision_devengada_ano':'sum','comision_pagada_ano':'sum','comision_pendiente_cobranza':'sum','comision_retenida_ano':'sum'})
 FS=S['Fac Sem Ant']
 vends=sorted(set(H.vn)|set(S['Presupuesto'].vn)|set(S['Oport abiertas'].vn)|set(S['Cartera'].vn)|set(FS.vn))
-# roster de vendedores: altas/bajas contra la semana pasada (ignora la bolsa de control)
 _actuales=set(vends)-{'CARTERA SIN ASIGNAR'}
-_conocidos=set(prev.get('vendedores',[]))
-if _conocidos:
-    for _n in sorted(_actuales-_conocidos): aviso('aviso', f'Vendedor nuevo esta semana (no estaba la semana pasada): {_n}.')
-    for _n in sorted(_conocidos-_actuales): aviso('aviso', f'Vendedor de la semana pasada ya no aparece esta semana: {_n}.')
 # cobertura de roster: un vn que aparece en alguna hoja pero no en el roster (vends)
 # significa que esas filas nunca se le van a asignar a nadie y desaparecen sin avisar.
 _cubiertos=set(vends)
@@ -86,13 +61,12 @@ for _s in S:
     for _n in sorted(n for n in _serie.unique() if n and n not in _cubiertos):
         aviso('critico', f'«{_n}» aparece en la hoja «{_s}» pero no en Encabezado/Presupuesto/Oport abiertas/Cartera/Fac Sem Ant — sus filas ahí no van a aparecer en ningún reporte.')
 
-# ligas fijas: cada vendedor tiene un token estable que NO cambia de semana a semana,
-# para poder mandarle una sola vez su liga y que el contenido detrás se actualice solo.
-# Nunca se genera a partir del nombre — así no es adivinable navegando slugs.
-TOKENS=dict(prev.get('tokens',{}))
-for _v in list(_actuales)+['__direccion__']:
-    if _v not in TOKENS:
-        TOKENS[_v]=secrets.token_urlsafe(16)
+# tokens: HMAC-SHA256(TOKEN_SECRETO, "<año>-W<semana>|<vendedor>"), solo hex (0-9a-f, 32 caracteres).
+# El mismo vendedor en la misma semana siempre da el mismo token (volver a correr pisa los mismos
+# archivos); otra semana u otro vendedor da uno distinto. Sin el secreto no se puede calcular.
+# La liga es public/<año>/<semana>/<token>/index.html.
+def token(v): return hmac.new(SECRETO.encode(),f'{SEM}|{v}'.encode(),hashlib.sha256).hexdigest()[:32]
+TOKENS={_v:token(_v) for _v in list(_actuales)+['__direccion__']}
 def r2(v):
     try:
         f=float(v); return 0 if (math.isnan(f) or abs(f)<0.005) else round(f,2)
@@ -355,47 +329,52 @@ E['avisos']=AVISOS
 
 TPL=open(os.path.join(os.path.dirname(os.path.abspath(__file__)),'plantilla.html')).read()
 os.makedirs(SAL,exist_ok=True)
-# «publicar-<semana>» es EXCLUSIVAMENTE lo que se sube al hosting público — una carpeta por semana,
-# pero los archivos dentro conservan su nombre fijo con token (sin fecha) para que la liga no cambie.
-# Nada más de esta carpeta (estado.json, avisos-*.json, los reporte-<semana>-*.html con fecha)
+# «public» es EXCLUSIVAMENTE lo que se sube al hosting público (su contenido va en BASE_URL):
+# public/<año>/<semana>/<token>/index.html, una carpeta por semana que se acumula sin pisar las
+# anteriores. Nada más de esta carpeta (avisos-*.json, reportes/ con nombres legibles)
 # debe salir de aquí ni subirse a htdocs.
-PUB=os.path.join(SAL,f'publicar-{SEM}')
-os.makedirs(PUB,exist_ok=True)
+# «reportes» sigue el mismo patrón (reportes/<año>/<semana>/reporte-<vendedor>.html) para uso interno.
+ANIO_ISO,NSEM=SEM.split('-W')
+RUTA_SEM=f'{ANIO_ISO}/{NSEM}'
+PUB=os.path.join(SAL,'public',ANIO_ISO,NSEM)
+REP=os.path.join(SAL,'reportes',ANIO_ISO,NSEM)
+os.makedirs(PUB,exist_ok=True); os.makedirs(REP,exist_ok=True)
 import unicodedata,re as _re
 def slug(s):
     s=''.join(c for c in unicodedata.normalize('NFD',s) if unicodedata.category(c)!='Mn')
     return _re.sub(r'[^a-z0-9]+','-',s.lower()).strip('-')
 def escribir(nom,payload):
-    ruta=os.path.join(SAL,nom)
+    ruta=os.path.join(REP,nom)
     open(ruta,'w').write(TPL.replace('__DATA__',json.dumps(payload,ensure_ascii=False,separators=(',',':'))))
     return ruta
-def escribir_pub(nom,payload):
-    ruta=os.path.join(PUB,nom)
+def escribir_pub(token,payload):
+    # una carpeta por token con index.html, para que la liga quede …/<token>/ sin .html
+    os.makedirs(os.path.join(PUB,token),exist_ok=True)
+    ruta=os.path.join(PUB,token,'index.html')
     open(ruta,'w').write(TPL.replace('__DATA__',json.dumps(payload,ensure_ascii=False,separators=(',',':'))))
     return ruta
 BASE_URL=os.environ.get('BASE_URL','').rstrip('/')
-_liga=lambda t: (BASE_URL+'/' if BASE_URL else '<BASE_URL>/')+f'r-{t}.html'
+_liga=lambda t: (BASE_URL+'/' if BASE_URL else '<BASE_URL>/')+f'{RUTA_SEM}/{t}/'
 
-gen=escribir(f'reporte-{SEM}-direccion.html',{'V':OUT,'E':E})
-escribir_pub(f"r-{TOKENS['__direccion__']}.html",{'V':OUT,'E':E})
-print('General (archivo con fecha):',gen)
-print('General (liga fija):',_liga(TOKENS['__direccion__']))
+gen=escribir('reporte-direccion.html',{'V':OUT,'E':E})
+escribir_pub(TOKENS['__direccion__'],{'V':OUT,'E':E})
+print('General (archivo interno):',gen)
+print('General (liga de la semana):',_liga(TOKENS['__direccion__']))
 n=0
 LIGAS=[('Dirección (vista general)', os.environ.get('DIRECCION_CORREO',''), _liga(TOKENS['__direccion__']))]
 for v,d in OUT.items():
     if v=='CARTERA SIN ASIGNAR': continue
-    escribir(f'reporte-{SEM}-{slug(v)}.html',{'V':{v:d},'E':E,'solo':v})
-    escribir_pub(f"r-{TOKENS[v]}.html",{'V':{v:d},'E':E,'solo':v})
+    escribir(f'reporte-{slug(v)}.html',{'V':{v:d},'E':E,'solo':v})
+    escribir_pub(TOKENS[v],{'V':{v:d},'E':E,'solo':v})
     hh=H[H.vn==v]; _c=hh.iloc[0].vendedor_correo if len(hh) else None
     correo=(str(_c).strip() if pd.notna(_c) and str(_c).strip() else '')
     LIGAS.append((v,correo,_liga(TOKENS[v]))); n+=1
-print(f'Individuales: {n} archivos en {SAL} (y sus ligas fijas en {PUB}, listos para subir)')
+print(f'Individuales: {n} archivos en {REP} (y sus ligas de la semana en {PUB}, listos para subir)')
 print('OK · acum {:,.0f}/{:,.0f} = {:.1f}%'.format(E['acum']['v'],E['acum']['m'],E['acum']['v']/E['acum']['m']*100))
 print('cartera {:,.0f} | pipeline {:,.0f} | fuga {} clientes'.format(E['cart']['tot'],E['pipe']['v'],E['fugaT']['n']))
 print('conversion año: conteo {}% importe {}%'.format(E['conv']['a']['tc'],E['conv']['a']['tv']))
 print('actividades: {} ({} con minuta) en {} vendedores'.format(E['act']['n'],E['act']['min'],E['act']['vend']))
 
-json.dump({'hashes':HASH_HOJAS,'vendedores':sorted(_actuales),'tokens':TOKENS}, open(ESTADO,'w'), ensure_ascii=False)
 open(os.path.join(SAL,f'avisos-{SEM}.json'),'w').write(json.dumps(AVISOS,ensure_ascii=False,indent=2))
 if AVISOS:
     print(f"\n{len(AVISOS)} aviso(s) de datos — ver avisos-{SEM}.json y la vista de dirección del reporte.")
@@ -407,7 +386,7 @@ with open(os.path.join(SAL,f'ligas-{SEM}.csv'),'w',newline='') as _f:
     _w=csv.writer(_f); _w.writerow(['vendedor','correo','liga'])
     for v,correo,liga in LIGAS: _w.writerow([v,correo,liga])
 
-print('\nLigas fijas por vendedor (mandar una sola vez; el contenido se actualiza solo cada semana):')
+print(f'\nLigas de la semana {ANIO_ISO}/{NSEM} por vendedor (cambian cada semana; mandar las de este CSV):')
 _sin_correo=[]
 for v,correo,liga in LIGAS:
     print(f'  {v}: {liga}' + (f'  [{correo}]' if correo else ''))
