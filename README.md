@@ -114,15 +114,87 @@ del mismo `.env` (el `.env` no se copia a la imagen).
 | `SQL_CONTRASENA`   | —                           | Contraseña. Solo en `.env`, nunca en el repo. |
 | `SQL_TIMEOUT`      | `600`                       | Segundos máximos por consulta. |
 
+## Web
+
+Panel para correr el proceso, revisar el historial de semanas y mandar los correos, más la publicación
+de los reportes de los vendedores. Envuelve los mismos scripts: la línea de comandos sigue funcionando igual.
+
+```bash
+.venv/bin/pip install -r requirements-web.txt
+.venv/bin/uvicorn web.app.main:app --host 0.0.0.0 --port 8000     # o: docker compose up web
+```
+
+- **Proceso**: proceso completo o un paso suelto (extracción, reportes, correos), con el log en vivo.
+  Solo corre un trabajo a la vez; el historial y los logs quedan en `<SALIDA>/trabajos/`.
+- **Semanas**: por semana, Excel (descarga), avisos, ligas de cada vendedor y registro de envíos.
+- **Correos**: vista previa de cada correo, envío de prueba a una cuenta y envío real. El envío real pide
+  escribir la semana para confirmar y se bloquea si hay avisos críticos, salvo que se marque «ignorar avisos».
+- **Reportes**: `/reportes/<año>/<semana>/<token>/` sirve `<SALIDA>/public/`. Con
+  `BASE_URL=https://<host>/reportes` las ligas de los correos apuntan a esta misma app.
+
+**Acceso (no hay login).** El panel (`/` y `/api/*`) solo responde a las IPs de `ADMIN_REDES`; fuera de ellas
+devuelve 404. `/reportes/…` es público: cada reporte vive en una carpeta con un token no adivinable y las
+carpetas no se listan. `<SALIDA>/reportes/` (nombres legibles) nunca se publica.
+
+| Variable       | Por defecto | Descripción |
+|----------------|-------------|-------------|
+| `ADMIN_REDES`  | `127.0.0.1/32,::1/128,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16` | Redes que pueden usar el panel, separadas por coma. |
+| `FORWARDED_ALLOW_IPS` | `127.0.0.1` | (de uvicorn) IPs de proxies en los que se confía para tomar la IP real de `X-Forwarded-For`. |
+
+Si la app queda expuesta a internet detrás de un proxy (nginx, Caddy…), pon la IP del proxy en
+`FORWARDED_ALLOW_IPS`; si no, el panel vería a todos con la IP del proxy. **Con Docker Desktop (Mac/Windows)**
+las conexiones que entran por el puerto publicado llegan con la IP interna de Docker (`172.x`), que está en
+`ADMIN_REDES`: no publiques el puerto a internet sin un proxy delante.
+
+El CSS se compila con Tailwind standalone (sin Node) y `web/static/app.css` se versiona ya compilado:
+
+```bash
+web/tailwind.sh           # compila (la primera vez descarga el binario a web/bin/)
+web/tailwind.sh --watch   # recompila al editar web/cliente/
+```
+
+## Despliegue detrás de Apache (servidor Linux)
+
+La imagen `tonovarela/reportes-ventas` (linux/amd64) se publica en Docker Hub. En el servidor solo hacen
+falta `deploy/docker-compose.yml`, el `.env` y las carpetas de datos:
+
+```bash
+mkdir -p /opt/reportes/entrada /opt/reportes/salida && cd /opt/reportes
+# copiar aquí deploy/docker-compose.yml y el .env
+sudo chown -R 1000:1000 entrada salida      # el contenedor corre con el uid 1000
+docker compose pull && docker compose up -d
+```
+
+Apache publica la app en una subruta con `ProxyPass` (configuración lista en `deploy/apache-reportes.conf`,
+se incluye dentro del `<VirtualHost>`):
+
+| Pieza | Valor |
+|---|---|
+| Panel | `https://servicios.litoprocess.com/panel-reportes/` (solo red interna) |
+| Reportes | `https://servicios.litoprocess.com/panel-reportes/reportes/<año>/<semana>/<token>/` (público) |
+| `BASE_URL` en el `.env` | `https://servicios.litoprocess.com/panel-reportes/reportes` |
+| Subruta | `ROOT_PATH` en el `.env` (por defecto `/panel-reportes`); debe coincidir con el `ProxyPass` |
+
+Qué contempla la configuración para funcionar detrás del proxy:
+- **Subruta**: uvicorn recibe el prefijo (`UVICORN_ROOT_PATH`) y el cliente usa rutas relativas;
+  `/panel-reportes` sin barra final redirige a `/panel-reportes/`.
+- **IP real del usuario**: el contenedor publica el puerto solo en `127.0.0.1` y confía en `X-Forwarded-For`
+  únicamente cuando viene de Apache (la puerta de enlace `172.30.57.1` de la red fija del compose). Así el
+  filtro `ADMIN_REDES` del panel funciona y un cliente no puede hacerse pasar por interno.
+- **Doble candado al panel**: `Require ip` en Apache además del filtro de la app; `/reportes/` es público.
+- **Log en vivo**: Apache no lo comprime (`no-gzip`) para que las líneas lleguen al momento.
+- **Ligas ya enviadas**: si hoy `https://servicios.litoprocess.com/reportes/` es la carpeta donde se suben los
+  reportes, las líneas opcionales del final de `apache-reportes.conf` la sirven desde el contenedor.
+
+Para comprobar que la app ve la IP real: `docker compose logs web` debe mostrar la IP del usuario
+(con puerto `:0`), no la de Apache.
+
 ## Publicar en Docker Hub
 
 ```bash
 docker login
-# imagen para Intel y Apple Silicon a la vez
-docker buildx build --platform linux/amd64,linux/arm64 \
-  -t TU_USUARIO/reportes-ventas:1.0.0 \
-  -t TU_USUARIO/reportes-ventas:latest \
+docker buildx build --platform linux/amd64 \
+  -t tonovarela/reportes-ventas:1.0.0 \
+  -t tonovarela/reportes-ventas:latest \
   --push .
 ```
-
-Reemplazar `TU_USUARIO` también en `docker-compose.yml`.

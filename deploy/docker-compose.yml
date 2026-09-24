@@ -1,0 +1,45 @@
+# Despliegue en el servidor, detrás de Apache (ver apache-reportes.conf).
+# Copiar a una carpeta del servidor junto con el .env y levantar con:  docker compose up -d
+#
+#   <carpeta>/
+#     docker-compose.yml   (este archivo)
+#     .env                 (credenciales SQL/SMTP, TOKEN_SECRETO, CORREO_CCO, BASE_URL…)
+#     entrada/             Excel semanales         ← deben poder escribirse con el uid 1000 del contenedor:
+#     salida/              reportes, ligas, logs   ←   sudo chown -R 1000:1000 entrada salida
+services:
+  web:
+    image: tonovarela/reportes-ventas:latest
+    entrypoint: ["uvicorn", "web.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    command: []
+    restart: unless-stopped
+    # solo en el loopback: únicamente Apache (en este mismo servidor) llega al contenedor
+    ports:
+      - "127.0.0.1:${PUERTO_WEB:-8000}:8000"
+    volumes:
+      - ./entrada:/data/entrada
+      - ./salida:/data/salida
+    env_file: .env
+    environment:
+      ENTRADA: /data/entrada
+      SALIDA: /data/salida
+      FOLDER_SQL: /app/sql
+      # subruta que publica Apache (ProxyPass /panel-reportes/ …); debe coincidir con apache-reportes.conf
+      UVICORN_ROOT_PATH: ${ROOT_PATH:-/panel-reportes}
+      # Apache se conecta desde la puerta de enlace de la red «reportes» (abajo): solo de ahí se acepta
+      # X-Forwarded-For, así el panel ve la IP real del usuario y ADMIN_REDES funciona detrás del proxy
+      FORWARDED_ALLOW_IPS: "127.0.0.1,172.30.57.1"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/api/estado',timeout=5)"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+    networks: [reportes]
+
+networks:
+  reportes:
+    ipam:
+      # red fija para conocer la IP con la que llega Apache (la puerta de enlace .1);
+      # si choca con otra red del servidor, cambiar la subred aquí y en FORWARDED_ALLOW_IPS
+      config:
+        - subnet: 172.30.57.0/24
+          gateway: 172.30.57.1

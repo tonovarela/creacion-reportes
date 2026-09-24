@@ -37,6 +37,12 @@ def paso(n,titulo,script,args):
     print(f'--- paso {n} OK en {time.time()-t0:,.0f}s',flush=True)
     return ''.join(lineas)
 
+def criticos(sal,sem):
+    # avisos críticos que dejó gen.py para esa semana (cifras que no cuadran); frenan el envío real
+    f=os.path.join(sal,f'avisos-{sem}.json')
+    if not os.path.isfile(f): return []
+    return [x['msg'] for x in json.load(open(f,encoding='utf-8')) if x.get('nivel')=='critico']
+
 def main(args):
     ap=argparse.ArgumentParser(prog='orquestador.py',description='Extrae el Excel, genera los reportes y envía los correos, en secuencia.')
     ap.add_argument('--excel',metavar='ARCHIVO',help='usar este Excel y saltarse la extracción de SQL Server')
@@ -72,12 +78,11 @@ def main(args):
     if not os.path.isfile(ligas): raise SystemExit(f'No se encontró {ligas}')
 
     # antes de un envío real, frenar si hay cifras que no cuadran
-    avisos_f=os.path.join(sal,f'avisos-{sem}.json')
-    criticos=[x['msg'] for x in json.load(open(avisos_f,encoding='utf-8')) if x.get('nivel')=='critico'] if os.path.isfile(avisos_f) else []
-    if a.enviar and criticos and not a.ignorar_avisos:
-        print(f'\n✗ No se envió ningún correo: gen.py dejó {len(criticos)} aviso(s) crítico(s):')
-        for c in criticos: print('   -',c)
-        raise SystemExit(f'Revísalos en {avisos_f}. Para enviar de todos modos: python orquestador.py --excel "{excel}" --enviar --ignorar-avisos')
+    crit=criticos(sal,sem)
+    if a.enviar and crit and not a.ignorar_avisos:
+        print(f'\n✗ No se envió ningún correo: gen.py dejó {len(crit)} aviso(s) crítico(s):')
+        for c in crit: print('   -',c)
+        raise SystemExit(f'Revísalos en {os.path.join(sal,f"avisos-{sem}.json")}. Para enviar de todos modos: python orquestador.py --excel "{excel}" --enviar --ignorar-avisos')
 
     # 3. correos
     if a.enviar: extra=['--enviar']; titulo='Envío de correos'

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reportes semanales</title>
+<link rel="stylesheet" href="static/app.css">
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-800 antialiased">
+
+<header class="bg-marino text-white">
+  <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4">
+    <div>
+      <div class="text-xs uppercase tracking-widest text-sky-200">Litoprocess</div>
+      <h1 class="text-xl font-semibold">Reportes semanales</h1>
+    </div>
+    <div id="chips" class="flex flex-wrap gap-2 text-xs"></div>
+  </div>
+  <nav class="mx-auto flex max-w-7xl gap-1 px-4" role="tablist">
+    <button class="tab" data-tab="proceso" role="tab">Proceso</button>
+    <button class="tab" data-tab="semanas" role="tab">Semanas</button>
+    <button class="tab" data-tab="correos" role="tab">Correos</button>
+  </nav>
+</header>
+
+<main class="mx-auto max-w-7xl px-4 py-6">
+
+  <!-- ===================== PROCESO ===================== -->
+  <section id="tab-proceso" class="panel grid gap-6 lg:grid-cols-5">
+    <form id="form-trabajo" class="card space-y-5 lg:col-span-2">
+      <h2 class="titulo">Ejecutar</h2>
+
+      <fieldset class="space-y-2">
+        <legend class="etiqueta">Qué correr</legend>
+        <label class="opcion"><input type="radio" name="tipo" value="completo" checked> <span><b>Proceso completo</b><br><small>extracción → reportes → correos</small></span></label>
+        <label class="opcion"><input type="radio" name="tipo" value="extraer"> <span><b>Solo extracción</b><br><small>SQL Server → Excel en la carpeta de entrada (~3–4 min)</small></span></label>
+        <label class="opcion"><input type="radio" name="tipo" value="generar"> <span><b>Solo reportes</b><br><small>un Excel → reportes, avisos y ligas</small></span></label>
+        <label class="opcion"><input type="radio" name="tipo" value="correos"> <span><b>Solo correos</b><br><small>las ligas de una semana ya generada</small></span></label>
+      </fieldset>
+
+      <div data-si="completo generar">
+        <label class="etiqueta" for="excel">Excel</label>
+        <select id="excel" name="excel" class="campo"></select>
+        <p class="ayuda" data-si="completo">«Extraer de SQL Server» corre la extracción primero; elegir un archivo se la salta.</p>
+      </div>
+
+      <div data-si="correos">
+        <label class="etiqueta" for="semana-form">Semana</label>
+        <select id="semana-form" name="semana" class="campo"></select>
+      </div>
+
+      <fieldset data-si="completo correos" class="space-y-2">
+        <legend class="etiqueta">Correos</legend>
+        <label class="opcion"><input type="radio" name="modo" value="vista" checked> <span><b>Solo vista previa</b><br><small>no se envía nada</small></span></label>
+        <label class="opcion"><input type="radio" name="modo" value="prueba"> <span><b>Prueba</b><br><small>todos los correos a una sola cuenta, sin copia oculta</small></span></label>
+        <label class="opcion"><input type="radio" name="modo" value="enviar"> <span><b>Envío real</b><br><small>a cada vendedor, con copia oculta a CORREO_CCO</small></span></label>
+      </fieldset>
+
+      <div data-modo="prueba">
+        <label class="etiqueta" for="correo-prueba">Correo de prueba</label>
+        <input id="correo-prueba" name="correo_prueba" type="email" class="campo" placeholder="tu@litoprocess.com">
+      </div>
+
+      <div data-modo="enviar" class="space-y-3 rounded-lg border border-red-200 bg-red-50 p-3">
+        <label class="etiqueta text-red-800" for="confirmacion">Confirmación</label>
+        <input id="confirmacion" name="confirmacion" class="campo" autocomplete="off">
+        <p id="ayuda-confirmacion" class="ayuda text-red-800"></p>
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="ignorar_avisos"> Enviar aunque haya avisos críticos</label>
+      </div>
+
+      <button id="btn-ejecutar" type="submit" class="boton w-full">Ejecutar</button>
+    </form>
+
+    <div class="space-y-6 lg:col-span-3">
+      <div class="card p-0">
+        <div class="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+          <h2 id="titulo-log" class="titulo">Consola</h2>
+          <span id="estado-trabajo"></span>
+        </div>
+        <pre id="consola" class="h-[28rem] overflow-auto whitespace-pre-wrap break-words bg-slate-900 p-4 font-mono text-xs leading-relaxed text-slate-100">Aquí aparece el log del trabajo en curso.</pre>
+      </div>
+      <div class="card">
+        <h2 class="titulo mb-3">Trabajos recientes</h2>
+        <ul id="lista-trabajos" class="divide-y divide-slate-100 text-sm"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SEMANAS ===================== -->
+  <section id="tab-semanas" class="panel space-y-6" hidden>
+    <div class="card overflow-x-auto p-0">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <tr><th class="px-4 py-3">Semana</th><th class="px-4 py-3">Excel</th><th class="px-4 py-3">Reportes</th>
+              <th class="px-4 py-3">Avisos</th><th class="px-4 py-3">Correos enviados</th><th class="px-4 py-3"></th></tr>
+        </thead>
+        <tbody id="tabla-semanas" class="divide-y divide-slate-100"></tbody>
+      </table>
+    </div>
+    <div id="detalle-semana" class="space-y-6" hidden></div>
+  </section>
+
+  <!-- ===================== CORREOS ===================== -->
+  <section id="tab-correos" class="panel grid gap-6 lg:grid-cols-5" hidden>
+    <div class="space-y-6 lg:col-span-2">
+      <div class="card space-y-4">
+        <div>
+          <label class="etiqueta" for="semana-correos">Semana</label>
+          <select id="semana-correos" class="campo"></select>
+        </div>
+        <div id="cco-info" class="rounded-lg bg-slate-50 p-3 text-sm"></div>
+        <ul id="destinatarios" class="max-h-96 divide-y divide-slate-100 overflow-auto text-sm"></ul>
+      </div>
+      <div class="card space-y-4">
+        <h2 class="titulo">Enviar</h2>
+        <div class="flex gap-2">
+          <input id="c-prueba" type="email" class="campo" placeholder="tu@litoprocess.com">
+          <button id="btn-c-prueba" class="boton-sec whitespace-nowrap">Enviar prueba</button>
+        </div>
+        <div class="space-y-3 rounded-lg border border-red-200 bg-red-50 p-3">
+          <p class="text-sm text-red-900"><b>Envío real</b> a cada vendedor, con copia oculta a CORREO_CCO. Escribe la semana para confirmar.</p>
+          <input id="c-confirmacion" class="campo" autocomplete="off">
+          <label class="flex items-center gap-2 text-sm"><input id="c-ignorar" type="checkbox"> Enviar aunque haya avisos críticos</label>
+          <button id="btn-c-enviar" class="boton-peligro w-full">Envío real</button>
+        </div>
+      </div>
+    </div>
+    <div class="card p-0 lg:col-span-3">
+      <div id="titulo-vista" class="border-b border-slate-200 px-4 py-3 text-sm text-slate-500">Elige un destinatario para ver su correo.</div>
+      <iframe id="vista" title="Vista previa del correo" sandbox="allow-popups allow-popups-to-escape-sandbox" class="h-[40rem] w-full rounded-b-xl bg-white"></iframe>
+    </div>
+  </section>
+</main>
+
+<div id="avisos" class="fixed bottom-4 right-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2"></div>
+<script src="cliente/app.js"></script>
+</body>
+</html>

@@ -13,3 +13,6 @@ __pycache__/
 
 # macOS
 .DS_Store
+
+# Binario de Tailwind que descarga web/tailwind.sh
+web/bin/

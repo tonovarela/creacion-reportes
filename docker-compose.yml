@@ -1,7 +1,7 @@
 services:
   reportes:
     build: .
-    image: TU_USUARIO/reportes-ventas:latest
+    image: tonovarela/reportes-ventas:latest
     volumes:
       - ./entrada:/data/entrada:ro
       - ./salida:/data/salida
@@ -13,7 +13,7 @@ services:
   # saca el Excel de la semana desde SQL Server y lo deja en ./entrada
   extraer:
     build: .
-    image: TU_USUARIO/reportes-ventas:latest
+    image: tonovarela/reportes-ventas:latest
     entrypoint: ["python", "/app/extraer_excel.py"]
     command: []
     volumes:
@@ -26,3 +26,21 @@ services:
       SQL_USUARIO: ${SQL_USUARIO:-}
       SQL_CONTRASENA: ${SQL_CONTRASENA:-}
       SQL_TIMEOUT: ${SQL_TIMEOUT:-600}
+
+  # panel web: ejecuta el proceso, muestra el historial, manda los correos y publica /reportes/
+  # El panel solo responde a ADMIN_REDES; /reportes/<año>/<semana>/<token>/ es público.
+  web:
+    build: .
+    image: tonovarela/reportes-ventas:latest
+    entrypoint: ["uvicorn", "web.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    command: []
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./entrada:/data/entrada
+      - ./salida:/data/salida
+    env_file: .env
+    environment:
+      ENTRADA: /data/entrada
+      SALIDA: /data/salida
+      FOLDER_SQL: /app/sql
