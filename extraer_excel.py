@@ -4,7 +4,7 @@ Cada archivo NN-nombre.sql es una hoja: el orden sale del número inicial (01, 0
 de la hoja del primer comentario del archivo (-- Encabezado). Los separadores GO se respetan.
 
 Uso:
-  python extraer_excel.py                 # escribe <ENTRADA>/<año>-W<semana>.xlsx
+  python extraer_excel.py                 # escribe <ENTRADA>/<semana_iso>.xlsx
   python extraer_excel.py salida.xlsx     # a un archivo específico
   python extraer_excel.py --listar        # solo muestra qué hojas saldrían, sin conectarse
 """
@@ -15,6 +15,12 @@ cargar_env()
 
 SQL_DIR=os.environ.get('FOLDER_SQL') or os.path.join(os.path.dirname(os.path.abspath(__file__)),'sql')
 PROHIBIDOS=set('[]:*?/\\')
+# columnas que se muestran como moneda (sin distinguir mayúsculas); si una consulta agrega un monto nuevo, va aquí
+MONTOS={'importe','facturado_semana','facturado_mes','facturado_ano','comision_devengada_ano',
+        'comision_pagada_ano','comision_pendiente_cobranza','comision_retenida_ano','venta_mes','meta_mes',
+        'impultcobro','corriente','d0_30','d31_60','d61_90','d90_mas','saldo','venta'}
+FMT_MONTO='"$"#,##0.00'
+FMT_FECHA='mm/dd/yyyy'
 
 def nombre_hoja(txt,ruta):
     # la primera línea con contenido tiene que ser el comentario con el nombre de la hoja
@@ -71,35 +77,59 @@ def ejecutar(cn,txt,ruta):
     # DECIMAL/MONEY llegan como Decimal: a float para que Excel los guarde como número
     for c in df.columns:
         if df[c].map(lambda x: isinstance(x,decimal.Decimal)).any(): df[c]=pd.to_numeric(df[c])
+    # algunos montos llegan como texto ya formateado ("29,550.00"): a número para poder darles formato
+    for c in df.columns:
+        if str(c).lower() in MONTOS and not pd.api.types.is_numeric_dtype(df[c]):
+            s=df[c].astype('string').str.replace(r'[$,\s]','',regex=True).replace('',pd.NA)
+            df[c]=pd.to_numeric(s).astype(float)
     return df
 
-def semana_por_defecto():
-    # misma semana que calculan las consultas: la que terminó el domingo anterior
-    hoy=datetime.date.today(); fin=hoy-datetime.timedelta(days=hoy.weekday()+1)
-    a,s,_=fin.isocalendar(); return a,s
+def formatear(ws,df):
+    # fechas en mm/dd/yyyy y montos como $#,##0.00; se ensancha la columna para que Excel no muestre ####
+    for i,c in enumerate(df.columns,start=1):
+        es_fecha=pd.api.types.is_datetime64_any_dtype(df[c]) or df[c].map(lambda x: isinstance(x,(datetime.date,datetime.datetime))).any()
+        es_monto=str(c).lower() in MONTOS
+        if not (es_fecha or es_monto): continue
+        fmt=FMT_FECHA if es_fecha else FMT_MONTO
+        for (celda,) in ws.iter_rows(min_row=2,min_col=i,max_col=i):
+            celda.number_format=fmt
+        ancho=10 if es_fecha else max((len(f'${v:,.2f}') for v in df[c].dropna()),default=0)
+        ws.column_dimensions[ws.cell(1,i).column_letter].width=max(ancho,len(str(c)))+2
 
 def nombre_archivo(hojas):
-    # si alguna hoja trae una sola semana_iso (Encabezado), se usa esa; con la semana a 2 dígitos
+    # el nombre sale de semana_iso de la hoja Encabezado (sql/01-encabezados.sql); con la semana a 2 dígitos
     # para que el orden alfabético (el que usa gen.py para tomar el más reciente) sea el correcto
-    for df in hojas.values():
-        if 'semana_iso' in df.columns:
-            v=df.semana_iso.dropna().astype(str).unique()
-            m=re.match(r'^(\d{4})-W(\d{1,2})$',v[0]) if len(v)==1 else None
-            if m: return f'{m.group(1)}-W{int(m.group(2)):02d}.xlsx'
-    a,s=semana_por_defecto(); return f'{a}-W{s:02d}.xlsx'
+    df=hojas.get('Encabezado')
+    if df is None or 'semana_iso' not in df.columns:
+        raise SystemExit('La hoja Encabezado no trae la columna semana_iso: no se puede nombrar el Excel.')
+    v=df.semana_iso.dropna().astype(str).str.strip().unique()
+    m=re.match(r'^(\d{4})-W(\d{1,2})$',v[0]) if len(v)==1 else None
+    if not m:
+        raise SystemExit(f'semana_iso de Encabezado debe traer una sola semana tipo 2026-W38 y trae: {", ".join(v) or "(vacío)"}')
+    return f'{m.group(1)}-W{int(m.group(2)):02d}.xlsx'
 
 def conectar():
     import pymssql
     faltan=[k for k in ('SQL_SERVIDOR','SQL_BASE_DATOS','SQL_USUARIO','SQL_CONTRASENA') if not os.environ.get(k)]
     if faltan: raise SystemExit('Faltan en el .env o el entorno: '+', '.join(faltan))
     try:
-        return pymssql.connect(server=os.environ['SQL_SERVIDOR'],port=os.environ.get('SQL_PUERTO') or '1433',
-                               database=os.environ['SQL_BASE_DATOS'],user=os.environ['SQL_USUARIO'],
-                               password=os.environ['SQL_CONTRASENA'],charset='UTF-8',login_timeout=30,
-                               timeout=int(os.environ.get('SQL_TIMEOUT') or 600))
+        cn=pymssql.connect(server=os.environ['SQL_SERVIDOR'],port=os.environ.get('SQL_PUERTO') or '1433',
+                           database=os.environ['SQL_BASE_DATOS'],user=os.environ['SQL_USUARIO'],
+                           password=os.environ['SQL_CONTRASENA'],charset='UTF-8',login_timeout=30,
+                           timeout=int(os.environ.get('SQL_TIMEOUT') or 600))
     except pymssql.OperationalError as e:
         msg=e.args[0][1].decode(errors='replace') if e.args and isinstance(e.args[0],tuple) else str(e)
         raise SystemExit('No se pudo conectar a SQL Server — revisa SQL_SERVIDOR, SQL_PUERTO, usuario y contraseña.\n'+msg.strip())
+    # FreeTDS abre la sesión en us_english (mdy) aunque el login tenga otro idioma; las vistas que
+    # convierten fechas varchar truenan con error 242. Se usa el idioma del login, igual que SSMS,
+    # o el de SQL_IDIOMA si se define.
+    cur=cn.cursor()
+    idioma=os.environ.get('SQL_IDIOMA')
+    if not idioma:
+        cur.execute('SELECT default_language_name FROM sys.server_principals WHERE name=SUSER_SNAME()')
+        r=cur.fetchone(); idioma=r[0] if r else None
+    if idioma: cur.execute("SET LANGUAGE %s",(idioma,))
+    return cn
 
 def main(args):
     qs=consultas(SQL_DIR)
@@ -124,7 +154,8 @@ def main(args):
     # que gen.py tome (su búsqueda con *.xlsx no ve archivos que empiezan con punto)
     tmp=os.path.join(os.path.dirname(os.path.abspath(destino)),'.'+os.path.basename(destino))
     with pd.ExcelWriter(tmp,engine='openpyxl') as w:
-        for h,df in hojas.items(): df.to_excel(w,sheet_name=h,index=False)
+        for h,df in hojas.items():
+            df.to_excel(w,sheet_name=h,index=False); formatear(w.sheets[h],df)
     os.replace(tmp,destino)
     print('Excel:',destino)
 

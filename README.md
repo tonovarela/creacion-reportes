@@ -4,7 +4,7 @@ Genera los reportes HTML por vendedor y la vista de dirección a partir del Exce
 
 Son dos pasos:
 
-1. `extraer_excel.py` ejecuta las consultas de `sql/` contra SQL Server y arma `<ENTRADA>/<año>-W<semana>.xlsx`.
+1. `extraer_excel.py` ejecuta las consultas de `sql/` contra SQL Server y arma `<ENTRADA>/<semana_iso>.xlsx` (semana_iso sale de la hoja Encabezado).
 2. `gen.py` toma ese Excel y genera los reportes.
 
 ## Carpetas
@@ -43,7 +43,7 @@ BASE_URL=https://otro.com .venv/bin/python gen.py  # lo de la línea de comandos
 
 ```bash
 .venv/bin/python extraer_excel.py --listar     # revisa sql/ sin conectarse: orden y nombre de cada hoja
-.venv/bin/python extraer_excel.py              # escribe <ENTRADA>/<año>-W<semana>.xlsx
+.venv/bin/python extraer_excel.py              # escribe <ENTRADA>/<semana_iso>.xlsx
 .venv/bin/python extraer_excel.py otro.xlsx    # o a un archivo específico
 ```
 
