@@ -14,7 +14,7 @@ services:
     restart: unless-stopped
     # solo en el loopback: únicamente Apache (en este mismo servidor) llega al contenedor
     ports:
-      - "127.0.0.1:${PUERTO_WEB:-8000}:8000"
+      - "127.0.0.1:${PUERTO_WEB:-8888}:8000"
     volumes:
       - ./entrada:/data/entrada
       - ./salida:/data/salida

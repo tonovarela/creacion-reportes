@@ -35,7 +35,7 @@ services:
     entrypoint: ["uvicorn", "web.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
     command: []
     ports:
-      - "8000:8000"
+      - "8888:8000"
     volumes:
       - ./entrada:/data/entrada
       - ./salida:/data/salida
