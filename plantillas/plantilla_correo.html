@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reporte semanal</title>
+</head>
+<body style="margin:0;padding:0;background:#f2f4f7;font-family:Arial,Helvetica,sans-serif;color:#1f2933;">
+<!-- $aviso_prueba solo se llena al enviar con --prueba -->
+$aviso_prueba
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f4f7;padding:24px 12px;">
+  <tr><td align="center">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:8px;overflow:hidden;">
+      <tr><td style="background:#1d3557;padding:20px 24px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <!-- el logo es azul marino como la franja: va sobre un recuadro blanco para que se lea -->
+            <td valign="middle" style="padding-right:12px;">
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr><td style="background:#ffffff;border-radius:6px;padding:10px 12px;">
+                  <img src="$logo_url" width="160" height="31" alt="Litoprocess · impresos + soluciones"
+                       style="display:block;border:0;outline:none;text-decoration:none;width:160px;height:31px;">
+                </td></tr>
+              </table>
+            </td>
+            <td valign="middle" align="right" style="text-align:right;">
+              <div style="color:#ffffff;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Reporte comercial</div>
+              <div style="color:#ffffff;font-size:22px;font-weight:bold;margin-top:4px;white-space:nowrap;">Semana $num_semana</div>
+              <div style="color:#c9d6e8;font-size:13px;margin-top:2px;white-space:nowrap;">$rango</div>
+            </td>
+          </tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:28px;">
+        <p style="margin:0 0 16px;font-size:16px;">Hola $nombre,</p>
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.5;">$intro</p>
+        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0;">
+          <tr><td style="background:#e63946;border-radius:6px;">
+            <a href="$liga" style="display:inline-block;padding:13px 28px;color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;">Ver mi reporte</a>
+          </td></tr>
+        </table>
+        <p style="margin:0 0 8px;font-size:13px;color:#52606d;line-height:1.5;">
+          Si el botón no funciona, copia esta liga en tu navegador:<br>
+          <a href="$liga" style="color:#1d3557;word-break:break-all;">$liga</a>
+        </p>
+        <p style="margin:16px 0 0;font-size:13px;color:#52606d;line-height:1.5;">
+          La liga es personal: no la reenvíes. Cambia cada semana.
+        </p>
+      </td></tr>
+      <tr><td style="background:#f7f9fb;padding:16px 28px;font-size:12px;color:#7b8794;">
+        Correo automático. Si ves algún dato que no cuadra, responde a este mensaje.
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

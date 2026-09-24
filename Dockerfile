@@ -10,7 +10,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY gen.py entorno.py extraer_excel.py plantilla.html ./
+COPY gen.py entorno.py extraer_excel.py ./
+COPY plantillas/ ./plantillas/
 # consultas por defecto; se pueden reemplazar montando otra carpeta en /app/sql
 COPY sql/ ./sql/
 

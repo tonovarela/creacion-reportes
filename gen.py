@@ -327,7 +327,7 @@ if abs(_cart_bu-E['cart']['tot'])>max(500,E['cart']['tot']*0.005):
     aviso('critico', f"Cartera: la suma por vendedor ({_cart_bu:,.0f}) no cuadra con el total de la hoja Cartera ({E['cart']['tot']:,.0f}).")
 E['avisos']=AVISOS
 
-TPL=open(os.path.join(os.path.dirname(os.path.abspath(__file__)),'plantilla.html')).read()
+TPL=open(os.path.join(os.path.dirname(os.path.abspath(__file__)),'plantillas','plantilla.html')).read()
 os.makedirs(SAL,exist_ok=True)
 # «public» es EXCLUSIVAMENTE lo que se sube al hosting público (su contenido va en BASE_URL):
 # public/<año>/<semana>/<token>/index.html, una carpeta por semana que se acumula sin pisar las
