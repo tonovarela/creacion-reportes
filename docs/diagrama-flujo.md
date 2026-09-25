@@ -22,7 +22,7 @@ flowchart TD
 
     ligas --> modo{"Modo de correos"}
     modo -- "sin bandera" --> vista["<b>3. enviar_correos.py</b><br/>solo vistas previas<br/>salida/correos-SEM/*.html"]
-    modo -- "--prueba CORREO" --> prueba["<b>3. enviar_correos.py</b><br/>todos los correos a una sola cuenta<br/>sin copia oculta"]
+    modo -- "--prueba CORREO" --> prueba["<b>3. enviar_correos.py</b><br/>todos los correos a una sola cuenta<br/>con copia oculta a CORREO_CCO"]
     modo -- "--enviar" --> cco{"¿CORREO_CCO<br/>en .env?"}
     cco -- No --> alto1(["Se detiene"])
     cco -- Sí --> crit{"¿Avisos críticos?"}

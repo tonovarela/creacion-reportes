@@ -255,7 +255,7 @@ async function cargarCorreos() {
   await Promise.all([cargarListaSemanas(), cargarEstado(false)]);
   const c = ESTADO.cco;
   $('#cco-info').replaceChildren(c.length
-    ? h('div', {}, h('b', {}, 'Copia oculta en el envío real: '), c.join(', '))
+    ? h('div', {}, h('b', {}, 'Copia oculta (prueba y envío real): '), c.join(', '))
     : h('div', { class: 'text-red-700' }, ESTADO.config.correo_cco ? 'CORREO_CCO tiene correos no válidos.' : 'Falta CORREO_CCO en el .env: el envío real no se puede hacer.'));
   if (!$('#c-prueba').value) $('#c-prueba').value = leer('correo_prueba');
   await cargarDestinatarios();

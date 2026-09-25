@@ -6,6 +6,7 @@
 #     .env                 (credenciales SQL/SMTP, TOKEN_SECRETO, CORREO_CCO, BASE_URL…)
 #     entrada/             Excel semanales         ← deben poder escribirse con el uid 1000 del contenedor:
 #     salida/              reportes, ligas, logs   ←   sudo chown -R 1000:1000 entrada salida
+#     correr-semanal.sh    (opcional) proceso completo desde cron dentro del contenedor «web»; deja logs/ aquí
 services:
   web:
     image: tonovarela/reportes-ventas:latest

@@ -13,7 +13,7 @@ Uso:
   python orquestador.py --enviar                     # envío real a los vendedores
   python orquestador.py --excel entrada/2026-W38.xlsx --enviar   # se salta la extracción y usa ese Excel
 
-Los correos reales van con copia oculta a CORREO_CCO del .env (obligatoria con --enviar).
+Los correos (reales y de prueba) van con copia oculta a CORREO_CCO del .env (obligatoria con --enviar).
 Con --enviar, si gen.py dejó avisos críticos (cifras que no cuadran) no se envía nada, a menos que se
 agregue --ignorar-avisos después de revisarlos.
 """

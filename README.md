@@ -189,6 +189,33 @@ Qué contempla la configuración para funcionar detrás del proxy:
 Para comprobar que la app ve la IP real: `docker compose logs web` debe mostrar la IP del usuario
 (con puerto `:0`), no la de Apache.
 
+### Ejecución automática (cron)
+
+`deploy/correr-semanal.sh` corre `orquestador.py` dentro del contenedor `web` que ya está levantado
+(`docker compose exec`), con el mismo `.env` y los mismos volúmenes que el panel. Sin argumentos usa `--prueba`
+(todos los correos a `CORREO_PRUEBA`, con copia oculta a `CORREO_CCO`); cualquier argumento se pasa tal cual
+al orquestador.
+
+```bash
+cp correr-semanal.sh /opt/reportes/ && chmod +x /opt/reportes/correr-semanal.sh
+# en /opt/reportes/.env:  CORREO_PRUEBA=yo@litoprocess.com
+crontab -e      # con un usuario que pueda usar docker
+```
+
+```
+0 7 * * 1 /opt/reportes/correr-semanal.sh             # lunes 07:00, modo prueba
+# 0 7 * * 1 /opt/reportes/correr-semanal.sh --enviar  # envío real (se frena solo si hay avisos críticos)
+```
+
+- Cada corrida deja su log en `/opt/reportes/logs/AAAAMMDD-HHMMSS.log` (se borran a los 90 días); los reportes
+  y las ligas quedan en `salida/` como siempre y se ven en la pestaña Semanas del panel.
+- Si el contenedor no está arriba, o ya hay otra corrida del script en curso, no se ejecuta y sale con error
+  (cron lo manda por correo si el host tiene `MAILTO`).
+- Cron usa la zona horaria del servidor (`timedatectl`); el contenedor usa `America/Mexico_City`.
+- La corrida del cron no aparece en el historial del panel ni respeta su candado de «un trabajo a la vez»:
+  no lanzar un proceso desde el panel a esa misma hora.
+- Para probarlo como lo vería cron: `env -i HOME=$HOME /opt/reportes/correr-semanal.sh; echo $?`
+
 ## Publicar en Docker Hub
 
 ```bash

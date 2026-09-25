@@ -10,8 +10,8 @@ Uso:
 En envío real se lleva un registro en <SALIDA>/envios-<semana>.csv: si se vuelve a correr, a quien ya
 se le mandó no se le repite (útil si el envío se corta a medias).
 
-Cada correo real va con copia oculta a la lista CORREO_CCO del .env (correos separados por coma); sin ella
---enviar no manda nada. En --prueba no se copia a nadie.
+Cada correo (real o de prueba) va con copia oculta a la lista CORREO_CCO del .env (correos separados por coma);
+sin ella --enviar no manda nada. En --prueba es opcional: si falta, solo llega a la cuenta de prueba.
 """
 import os, re, sys, csv, time, argparse, datetime, smtplib, unicodedata
 from email.message import EmailMessage
@@ -62,7 +62,7 @@ def armar(fila,sem,remitente,prueba,cco=()):
            f'Ya está disponible tu reporte de la semana {num} ({rg}). Incluye tu facturación contra presupuesto, pedidos, oportunidades, actividades, entregas y cartera.')
     aviso=(f'<div style="background:#fff3cd;color:#664d03;padding:10px 16px;font-size:13px;font-family:Arial,sans-serif;">'
            f'PRUEBA — en el envío real este correo iría a <b>{fila["correo"] or "(sin correo)"}</b> ({fila["vendedor"]})'
-           +(f', con copia oculta a {len(cco)} contacto(s) de CORREO_CCO' if cco else '')+'.</div>') if prueba else ''
+           +(f'; esta prueba va con copia oculta a {len(cco)} contacto(s) de CORREO_CCO' if cco else '')+'.</div>') if prueba else ''
     v=dict(nombre=nombre,num_semana=num,rango=rg,liga=fila['liga'],intro=intro,aviso_prueba=aviso,logo_url=LOGO_URL)
     html=Template(open(os.path.join(BASE,'plantillas','plantilla_correo.html'),encoding='utf-8').read()).substitute(v)
     texto=(f'Hola {nombre},\n\n{intro}\n\nVer el reporte: {fila["liga"]}\n\n'
@@ -72,9 +72,9 @@ def armar(fila,sem,remitente,prueba,cco=()):
     msg['Subject']=('[PRUEBA] ' if prueba else '')+f'Reporte semanal · Semana {num} ({rg})'
     msg['From']=formataddr((os.environ.get('CORREO_NOMBRE') or 'Reportes Litoprocess',remitente))
     msg['To']=prueba or fila['correo']
-    # en prueba no se copia a nadie: el correo solo debe llegar a la cuenta de prueba.
+    # también en prueba: la copia oculta revisa cómo llegaría el correo real.
     # send_message quita el encabezado Bcc antes de transmitir, así que los destinatarios no ven la lista
-    if cco and not prueba: msg['Bcc']=', '.join(cco)
+    if cco: msg['Bcc']=', '.join(cco)
     if os.environ.get('CORREO_RESPONDER_A'): msg['Reply-To']=os.environ['CORREO_RESPONDER_A']
     msg['Message-ID']=make_msgid(domain=remitente.split('@')[-1])
     msg.set_content(texto); msg.add_alternative(html,subtype='html')
@@ -131,7 +131,7 @@ def main(args):
         raise SystemExit('Falta CORREO_CCO en el .env: la lista de correos que va en copia oculta, separados por coma. No se envió nada.')
     print(f'Ligas: {ruta}  ({len(filas)} renglones, semana {sem})')
     print('Copia oculta: '+(', '.join(cco) if cco else '(falta CORREO_CCO en el .env; el envío real no correrá sin ella)')
-          +(' — no se usa en --prueba' if prueba and cco else ''))
+          +(' — también en --prueba' if prueba and cco else ''))
 
     registro=os.path.join(SAL,f'envios-{sem}.csv')
     ya=set()
