@@ -8,7 +8,7 @@
 #   (cualquier otro argumento se le pasa tal cual a orquestador.py)
 #
 # Crontab (crontab -e del usuario que puede usar docker), p. ej. lunes 07:00 hora del servidor:
-#   0 7 * * 1 /opt/reportes/correr-semanal.sh
+#   0 7 * * 1 /ruta/a/reportes/correr-semanal.sh
 #
 # Cada corrida deja su log en logs/AAAAMMDD-HHMMSS.log; los de más de 90 días se borran solos.
 set -u
