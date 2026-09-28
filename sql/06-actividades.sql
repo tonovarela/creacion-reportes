@@ -1,6 +1,6 @@
 
 --Actividades
-DECLARE @Hoy          DATE = CAST(GETDATE() AS DATE);
+DECLARE @Hoy          DATE = CAST(DATEADD(DAY, 1, GETDATE()) AS DATE);  -- +1: si corre en domingo, toma la semana que termina hoy
 DECLARE @LunesActual  DATE = DATEADD(DAY, DATEDIFF(DAY, 0, @Hoy) / 7 * 7, 0);  -- lunes de la semana en curso
 DECLARE @FechaFin     DATE = DATEADD(DAY, -1, @LunesActual);   -- domingo anterior
 DECLARE @AnioFiscal   INT = YEAR(@FechaFin);
