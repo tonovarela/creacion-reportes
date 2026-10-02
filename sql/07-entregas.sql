@@ -1,12 +1,14 @@
 -- Entregas
 
-DECLARE @Hoy          DATE = CAST(DATEADD(DAY, 1, GETDATE()) AS DATE);  -- +1: si corre en domingo, toma la semana que termina hoy
-DECLARE @LunesActual  DATE = DATEADD(DAY, DATEDIFF(DAY, 0, @Hoy) / 7 * 7, 0);  -- lunes de la semana en curso
+DECLARE @FechaEjecucion DATE = CAST(GETDATE() AS DATE);  -- prueba: CAST('2026-10-02' AS DATE)
+DECLARE @Hoy          DATE = DATEADD(DAY, DATEDIFF(DAY, 0, @FechaEjecucion) / 7 * 7 + 6, 0);  -- domingo de la semana en curso
 
-DECLARE @FechaFin     DATE = DATEADD(DAY, -1, @LunesActual);   -- domingo anterior
-DECLARE @FechaInicio  DATE = DATEADD(DAY, -6, @FechaFin);      -- lunes de esa semana
-
+DECLARE @FechaFin     DATE = @Hoy;                             -- domingo de la semana en curso
+DECLARE @FechaInicio  DATE = DATEADD(DAY, -6, @FechaFin);      -- lunes de la semana en curso
+DECLARE @SemanaISO    VARCHAR(8) = CONCAT(YEAR(@FechaFin), '-W', DATEPART(ISO_WEEK, @FechaFin));
 DECLARE @AnioFiscal   INT = YEAR(@FechaFin);
+DECLARE @MesActual    INT = MONTH(@FechaFin);
+
 
 
 SELECT
