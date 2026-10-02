@@ -2,8 +2,14 @@
 !gen.py
 !entorno.py
 !extraer_excel.py
+!enviar_correos.py
+!orquestador.py
 !plantillas/
 !plantillas/*.html
 !requirements.txt
+!requirements-web.txt
 !sql/
 !sql/*.sql
+!web/
+web/bin/
+**/__pycache__

@@ -114,15 +114,192 @@ del mismo `.env` (el `.env` no se copia a la imagen).
 | `SQL_CONTRASENA`   | —                           | Contraseña. Solo en `.env`, nunca en el repo. |
 | `SQL_TIMEOUT`      | `600`                       | Segundos máximos por consulta. |
 
+## Web
+
+Panel para correr el proceso, revisar el historial de semanas y mandar los correos, más la publicación
+de los reportes de los vendedores. Envuelve los mismos scripts: la línea de comandos sigue funcionando igual.
+
+```bash
+.venv/bin/pip install -r requirements-web.txt
+.venv/bin/uvicorn web.app.main:app --host 0.0.0.0 --port 8000     # o: docker compose up web
+```
+
+- **Proceso**: proceso completo o un paso suelto (extracción, reportes, correos), con el log en vivo.
+  Solo corre un trabajo a la vez; el historial y los logs quedan en `<SALIDA>/trabajos/`.
+- **Semanas**: por semana, Excel (descarga), avisos, ligas de cada vendedor y registro de envíos.
+- **Correos**: vista previa de cada correo, envío de prueba a una cuenta y envío real. El envío real pide
+  escribir la semana para confirmar y se bloquea si hay avisos críticos, salvo que se marque «ignorar avisos».
+- **Reportes**: `/reportes/<año>/<semana>/<token>/` sirve `<SALIDA>/public/`. Con
+  `BASE_URL=https://<host>/reportes` las ligas de los correos apuntan a esta misma app.
+
+**Acceso (no hay login).** El panel (`/` y `/api/*`) solo responde a las IPs de `ADMIN_REDES`; fuera de ellas
+devuelve 404. `/reportes/…` es público: cada reporte vive en una carpeta con un token no adivinable y las
+carpetas no se listan. `<SALIDA>/reportes/` (nombres legibles) nunca se publica.
+
+| Variable       | Por defecto | Descripción |
+|----------------|-------------|-------------|
+| `ADMIN_REDES`  | `127.0.0.1/32,::1/128,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16` | Redes que pueden usar el panel, separadas por coma. |
+| `FORWARDED_ALLOW_IPS` | `127.0.0.1` | (de uvicorn) IPs de proxies en los que se confía para tomar la IP real de `X-Forwarded-For`. |
+
+Si la app queda expuesta a internet detrás de un proxy (nginx, Caddy…), pon la IP del proxy en
+`FORWARDED_ALLOW_IPS`; si no, el panel vería a todos con la IP del proxy. **Con Docker Desktop (Mac/Windows)**
+las conexiones que entran por el puerto publicado llegan con la IP interna de Docker (`172.x`), que está en
+`ADMIN_REDES`: no publiques el puerto a internet sin un proxy delante.
+
+El CSS se compila con Tailwind standalone (sin Node) y `web/static/app.css` se versiona ya compilado:
+
+```bash
+web/tailwind.sh           # compila (la primera vez descarga el binario a web/bin/)
+web/tailwind.sh --watch   # recompila al editar web/cliente/
+```
+
+## Despliegue detrás de Apache (servidor Linux)
+
+La imagen `tonovarela/reportes-ventas` (linux/amd64) se publica en Docker Hub. En el servidor solo hacen
+falta `deploy/docker-compose.yml`, el `.env` y las carpetas de datos:
+
+```bash
+# /opt/reportes es solo un ejemplo: puede ser cualquier carpeta
+mkdir -p /opt/reportes/entrada /opt/reportes/salida && cd /opt/reportes
+# copiar aquí deploy/docker-compose.yml y el .env
+sudo chown -R 1000:1000 entrada salida      # el contenedor corre con el uid 1000
+docker compose pull && docker compose up -d
+```
+
+Apache publica la app en una subruta con `ProxyPass` (configuración lista en `deploy/apache-reportes.conf`,
+se incluye dentro del `<VirtualHost>`):
+
+| Pieza | Valor |
+|---|---|
+| Panel | `https://servicios.litoprocess.com/panel-reportes/` (solo red interna) |
+| Reportes | `https://servicios.litoprocess.com/panel-reportes/reportes/<año>/<semana>/<token>/` (público) |
+| `BASE_URL` en el `.env` | `https://servicios.litoprocess.com/panel-reportes/reportes` |
+| Subruta | `ROOT_PATH` en el `.env` (por defecto `/panel-reportes`); debe coincidir con el `ProxyPass` |
+
+Qué contempla la configuración para funcionar detrás del proxy:
+- **Subruta**: uvicorn recibe el prefijo (`UVICORN_ROOT_PATH`) y el cliente usa rutas relativas;
+  `/panel-reportes` sin barra final redirige a `/panel-reportes/`.
+- **IP real del usuario**: el contenedor publica el puerto solo en `127.0.0.1` y confía en `X-Forwarded-For`
+  únicamente cuando viene de Apache (la puerta de enlace `172.30.57.1` de la red fija del compose). Así el
+  filtro `ADMIN_REDES` del panel funciona y un cliente no puede hacerse pasar por interno.
+- **Doble candado al panel**: `Require ip` en Apache además del filtro de la app; `/reportes/` es público.
+- **Log en vivo**: Apache no lo comprime (`no-gzip`) para que las líneas lleguen al momento.
+- **Ligas ya enviadas**: si hoy `https://servicios.litoprocess.com/reportes/` es la carpeta donde se suben los
+  reportes, las líneas opcionales del final de `apache-reportes.conf` la sirven desde el contenedor.
+
+Para comprobar que la app ve la IP real: `docker compose logs web` debe mostrar la IP del usuario
+(con puerto `:0`), no la de Apache.
+
+### Proceso completo a mano (orquestador.py)
+
+`orquestador.py` corre los tres pasos en orden (extracción → reportes → correos) y se detiene en el primero
+que falle. Lo más sencillo es ejecutarlo dentro del contenedor `web` ya levantado, que tiene el `.env`
+(SQL, SMTP, `CORREO_CCO`…) y los volúmenes `/data/entrada` y `/data/salida`. Desde la carpeta del
+`docker-compose.yml`:
+
+```bash
+# solo vistas previas: extrae, genera y no manda ningún correo
+docker compose exec web python /app/orquestador.py
+
+# prueba: todos los correos a una cuenta (o a CORREO_PRUEBA del .env si se omite el correo)
+docker compose exec web python /app/orquestador.py --prueba yo@litoprocess.com
+docker compose exec web python /app/orquestador.py --prueba
+
+# envío real a los vendedores (requiere CORREO_CCO en el .env)
+docker compose exec web python /app/orquestador.py --enviar
+
+# usar un Excel que ya existe y saltarse la extracción de SQL Server
+docker compose exec web python /app/orquestador.py --excel /data/entrada/2026-W38.xlsx --enviar
+
+# enviar aunque gen.py haya dejado avisos críticos (después de revisarlos)
+docker compose exec web python /app/orquestador.py --excel /data/entrada/2026-W38.xlsx --enviar --ignorar-avisos
+```
+
+Si el contenedor `web` no está levantado, se puede lanzar uno temporal con la misma configuración:
+
+```bash
+docker compose run --rm --entrypoint python web /app/orquestador.py --prueba yo@litoprocess.com
+```
+
+| Parámetro | Qué hace |
+|---|---|
+| *(sin modo)* | Solo deja vistas previas de los correos; no se envía nada. |
+| `--prueba [CORREO]` | Manda todos los correos a esa cuenta, o a `CORREO_PRUEBA` si no se indica. |
+| `--enviar` | Envío real a los vendedores. No se combina con `--prueba`. |
+| `--excel ARCHIVO` | Usa ese Excel y se salta la extracción. Es la ruta **dentro del contenedor**: `./entrada/2026-W38.xlsx` del host es `/data/entrada/2026-W38.xlsx`. |
+| `--ignorar-avisos` | Con `--enviar`, envía aunque haya avisos críticos (cifras que no cuadran). |
+
+Todos los correos, reales y de prueba, van con copia oculta a `CORREO_CCO`.
+
+### Ejecución automática (cron)
+
+`deploy/correr-semanal.sh` corre `orquestador.py` dentro del contenedor `web` que ya está levantado
+(`docker compose exec -T`), con el mismo `.env` y los mismos volúmenes que el panel. Sin argumentos usa `--prueba`
+(todos los correos a `CORREO_PRUEBA`, con copia oculta a `CORREO_CCO`); cualquier argumento se pasa tal cual
+al orquestador (los mismos de la tabla anterior).
+
+El script **tiene que vivir en la misma carpeta que el `docker-compose.yml` y el `.env`** del servidor: al arrancar
+hace `cd` a su propia carpeta para que `docker compose` encuentre el proyecto. En los pasos siguientes,
+`/ruta/a/reportes` es esa carpeta; si no se sabe dónde quedó, con el contenedor levantado:
+
+```bash
+docker compose ls                     # columna CONFIG FILES: ruta completa del docker-compose.yml
+# o bien
+docker inspect --format '{{ index .Config.Labels "com.docker.compose.project.working_dir" }}' \
+  $(docker ps -q --filter label=com.docker.compose.service=web)
+```
+
+1. Copiar el script junto al `docker-compose.yml` y el `.env` del servidor y darle permisos de ejecución:
+
+   ```bash
+   cp deploy/correr-semanal.sh /ruta/a/reportes/ && chmod +x /ruta/a/reportes/correr-semanal.sh
+   ```
+
+2. Revisar el `.env`: `CORREO_PRUEBA=yo@litoprocess.com` para el modo prueba y `CORREO_CCO` para `--enviar`.
+
+3. Probarlo a mano, con el entorno mínimo que tendrá cron:
+
+   ```bash
+   env -i HOME=$HOME /ruta/a/reportes/correr-semanal.sh; echo $?
+   ls -t /ruta/a/reportes/logs | head -1     # log de esa corrida
+   ```
+
+4. Agregarlo al crontab de un usuario que pueda usar docker (está en el grupo `docker` o es root):
+
+   ```bash
+   crontab -e
+   ```
+
+   ```
+   # correo al que cron manda la salida de error si algo falla (requiere un MTA en el host)
+   MAILTO=sistemas@litoprocess.com
+
+   # min hora día-mes mes día-semana  comando
+   # lunes 07:00, modo prueba (correos a CORREO_PRUEBA)
+   0 7 * * 1 /ruta/a/reportes/correr-semanal.sh
+
+   # o bien envío real (se frena solo si hay avisos críticos)
+   # 0 7 * * 1 /ruta/a/reportes/correr-semanal.sh --enviar
+   ```
+
+   Verificar que quedó con `crontab -l`. Otros horarios: `30 6 * * 1` (lunes 06:30), `0 7 * * 1-5` (lunes a viernes).
+
+- Cada corrida deja su log en `/ruta/a/reportes/logs/AAAAMMDD-HHMMSS.log` (se borran a los 90 días); los reportes
+  y las ligas quedan en `salida/` como siempre y se ven en la pestaña Semanas del panel.
+- Si el contenedor no está arriba, o ya hay otra corrida del script en curso, no se ejecuta y sale con error
+  (cron lo manda por correo si el host tiene `MAILTO`).
+- Cron usa la zona horaria del servidor (`timedatectl`); el contenedor usa `America/Mexico_City`.
+- La corrida del cron no aparece en el historial del panel ni respeta su candado de «un trabajo a la vez»:
+  no lanzar un proceso desde el panel a esa misma hora.
+- Para confirmar que cron lo lanzó: `grep CRON /var/log/syslog` (Debian/Ubuntu) o `journalctl -u cron`
+  (`-u crond` en RHEL/Rocky).
+
 ## Publicar en Docker Hub
 
 ```bash
 docker login
-# imagen para Intel y Apple Silicon a la vez
-docker buildx build --platform linux/amd64,linux/arm64 \
-  -t TU_USUARIO/reportes-ventas:1.0.0 \
-  -t TU_USUARIO/reportes-ventas:latest \
+docker buildx build --platform linux/amd64 \
+  -t tonovarela/reportes-ventas:1.0.0 \
+  -t tonovarela/reportes-ventas:latest \
   --push .
 ```
-
-Reemplazar `TU_USUARIO` también en `docker-compose.yml`.

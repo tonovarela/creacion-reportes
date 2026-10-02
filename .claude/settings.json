@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod +x deploy/correr-semanal.sh)",
+      "Bash(sh -n deploy/correr-semanal.sh)",
+      "Bash(command -v shellcheck)",
+      "Bash(shellcheck deploy/correr-semanal.sh)",
+      "Bash(docker info *)",
+      "Bash(docker buildx *)"
+    ]
+  }
+}
